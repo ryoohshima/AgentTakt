@@ -1,11 +1,21 @@
+#editor-body {
+    height: 1fr;
+}
+
 GraphViewport {
     layers: edges nodes overlay;
+    width: 1fr;
     background: $surface;
     scrollbar-size: 1 1;
 }
 
 EdgeLayer {
     layer: edges;
+}
+
+RubberBand {
+    layer: overlay;
+    display: none;
 }
 
 NodeWidget {
@@ -16,4 +26,54 @@ NodeWidget {
     border: round $primary;
     border-title-align: left;
     border-subtitle-align: right;
+}
+
+ParamPanel {
+    width: 34;
+    background: $surface;
+    border-left: solid $primary;
+    padding: 1;
+}
+
+ParamPanel .panel-heading {
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+ParamPanel #panel-node-id {
+    color: $text-muted;
+    margin-bottom: 1;
+}
+
+ParamPanel Input {
+    margin-bottom: 1;
+}
+
+ParamPanel TextArea {
+    height: 10;
+}
+
+ConfirmApproveScreen, RejectReasonScreen {
+    align: center middle;
+}
+
+.dialog {
+    width: 56;
+    height: auto;
+    border: round $primary;
+    background: $panel;
+    padding: 1 2;
+}
+
+.dialog-message {
+    margin-bottom: 1;
+}
+
+.dialog-buttons {
+    height: auto;
+    align-horizontal: right;
+}
+
+.dialog-buttons Button {
+    margin-left: 2;
 }

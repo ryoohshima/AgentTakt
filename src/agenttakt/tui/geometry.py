@@ -7,6 +7,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+# モデル座標 → キャンバス座標のオフセット（入力ポート ○ が左端で見切れないため）
+PAD_X = 2
+PAD_Y = 1
+
 
 @dataclass(frozen=True)
 class Rect:
@@ -69,4 +73,18 @@ def route_orthogonal(edge_id: str, source: Rect, target: Rect, channel: int = 0)
         x_left = end[0] - 1 - channel
         ym = max(source.bottom, target.bottom) + 1 + channel
         points = (start, (x_right, sy), (x_right, ym), (x_left, ym), (x_left, ty), end)
+    return Route(edge_id, points)
+
+
+def route_to_point(
+    start: tuple[int, int], end: tuple[int, int], edge_id: str = "__rubber__"
+) -> Route:
+    """出力ポートから任意のセルへの仮経路（ラバーバンド用）。"""
+    sx, sy = start
+    ex, ey = end
+    if sy == ey:
+        points = (start, end)
+    else:
+        xm = max(sx + 1, (sx + ex) // 2) if ex > sx + 1 else sx + 1
+        points = (start, (xm, sy), (xm, ey), end)
     return Route(edge_id, points)

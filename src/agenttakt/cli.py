@@ -18,6 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
         "open", help="計画 JSON をエディタで開く（MCP なしのデバッグモード）"
     )
     open_parser.add_argument("plan_file", help="計画 JSON ファイルのパス")
+    open_parser.add_argument("--out", help="承認/却下後の計画 JSON の出力先")
     return parser
 
 
@@ -27,7 +28,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "open":
         from agenttakt.tui.app import run_open
 
-        return run_open(args.plan_file)
+        return run_open(args.plan_file, args.out)
     # サブコマンド未指定時の TUI 常駐起動（IdleScreen）は M3 で実装する
     parser.print_help()
     return 0
