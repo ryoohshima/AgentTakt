@@ -1,0 +1,34 @@
+name: Stale Issues / PRs
+
+# 古い Issue / PR を自動でクローズする。
+# 30 日無活動で stale ラベル付与、さらに 7 日無活動で自動クローズ。
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"  # 毎週月曜 00:00 UTC (= JST 月曜 09:00)
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v10
+        with:
+          days-before-stale: 30
+          days-before-close: 7
+          stale-issue-label: stale
+          stale-pr-label: stale
+          exempt-issue-labels: "pinned,security,keep-open"
+          exempt-pr-labels: "pinned,security,keep-open"
+          stale-issue-message: |
+            この Issue は 30 日間活動がないため stale としてマークされました。
+            7 日以内に追加コメントが無ければ自動でクローズされます。
+          stale-pr-message: |
+            この PR は 30 日間活動がないため stale としてマークされました。
+            7 日以内に追加コメントが無ければ自動でクローズされます。
+          close-issue-message: 自動クローズしました。再度議論が必要な場合は新しい Issue を作成してください。
+          close-pr-message: 自動クローズしました。継続作業が必要な場合は新しい PR を作成してください。
