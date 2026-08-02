@@ -5,53 +5,64 @@
 
 ## プロジェクト概要
 
-<!-- このリポジトリの目的・スコープを 2-3 行で記述 -->
+AgentTakt — AI エージェント（Executor）が MCP 経由で送信したタスク実行計画 JSON を、人間がターミナル上の ComfyUI 風ビジュアルノードエディタでレビュー・編集・承認する MCP サーバー兼 TUI ツール。
+
+- MCP サーバー（`agenttakt serve`）と TUI 常駐プロセス（`agenttakt`）の 2 プロセス構成。Unix domain socket（NDJSON）で接続する（詳細は [docs/architecture.md](./docs/architecture.md)）
+- 親 issue: [#3](https://github.com/ryoohshima/AgentTakt/issues/3)（M0〜M4 + docs の sub-issue で進捗管理）
 
 ## 技術スタック
 
-<!-- 言語 / フレームワーク / 主要ライブラリ / DB / インフラ など -->
-
-- 言語:
-- フレームワーク:
-- パッケージマネージャ:
+- 言語: Python 3.10+（開発環境は 3.12）
+- TUI: Textual >= 8.2
+- MCP: Python MCP SDK v1 FastMCP（`mcp>=1.9,<2` にピン留め。SDK import は `src/agenttakt/server/mcp_server.py` に閉じ込める）
+- データモデル: pydantic v2
+- パッケージマネージャ: uv（build backend は hatchling、src レイアウト）
 
 ## ディレクトリ構成
 
-<!-- 主要ディレクトリの役割を簡潔に記述 -->
-
 ```
 .
-├── src/           # ソースコード
-├── tests/         # テストコード
-├── docs/          # ドキュメント
-└── tasks/         # Claude Code 作業記録（todo.md / lessons.md）
+├── src/agenttakt/
+│   ├── cli.py             # エントリポイント（agenttakt / at）
+│   ├── models/            # Plan データモデル・DAG 検証・自動レイアウト
+│   ├── bridge/            # socket プロトコル・クライアント・サーバー
+│   ├── server/            # MCP サーバー（SDK import はここのみ）
+│   └── tui/               # Textual アプリ（screens / widgets / geometry）
+├── tests/                 # pytest（モデル・プロトコル・Pilot による TUI テスト）
+├── examples/              # デバッグモード用サンプル計画 JSON
+├── docs/                  # 設計ドキュメント
+└── tasks/                 # Claude Code 作業記録（todo.md / lessons.md）
 ```
 
 ## 開発コマンド
 
-<!-- よく使うコマンドを記載。Claude が即座に実行できるようコピペ可能な形で -->
-
 ```sh
-# 起動
-# pnpm dev
+# セットアップ
+uv sync
+
+# 実行
+uv run agenttakt                                  # TUI 常駐起動
+uv run agenttakt serve                            # MCP stdio サーバー
+uv run agenttakt open examples/sample_plan.json   # デバッグモード（MCP なし）
 
 # テスト
-# pnpm test
+uv run pytest
 
-# Lint / Type check
-# pnpm lint
-# pnpm typecheck
-
-# ビルド
-# pnpm build
+# TUI 開発（textual devtools）
+uv run textual console                            # 別ターミナルでログ閲覧
+uv run textual run --dev src/agenttakt/tui/app.py
 ```
 
 ## このリポジトリ固有の注意事項
 
-<!-- 落とし穴・既知の制約・特殊な規約があれば記述 -->
+- **stdio MCP サーバー内で TUI を起動してはならない**（stdio がプロトコル通信に専有されている）。TUI に触る処理は必ず TUI プロセス側に置く
+- エッジ描画は経路計算（`tui/geometry.py`）と文字化（`tui/widgets/edge_layer.py`）を分離したまま保つ（braille 曲線への差し替え口）
+- Plan / Node / Edge は `extra="allow"`。Executor 独自フィールドのラウンドトリップを壊さないこと
+- socket パスは `AGENTTAKT_SOCKET` → 既定 `{tempdir}/agenttakt-{uid}/takt.sock`。テストでは `tmp_path` 上の実 UDS を使う
 
 ## 参照ドキュメント
 
-<!-- README, アーキテクチャドキュメント、外部参照など -->
-
 - [README.md](./README.md)
+- [docs/architecture.md](./docs/architecture.md) — 2 プロセス構成・承認フロー
+- [docs/schema.md](./docs/schema.md) — Plan JSON スキーマ
+- [docs/protocol.md](./docs/protocol.md) — ブリッジプロトコル
