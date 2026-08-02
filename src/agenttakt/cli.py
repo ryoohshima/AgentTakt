@@ -13,12 +13,21 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--version", action="version", version=f"agenttakt {__version__}"
     )
+    subparsers = parser.add_subparsers(dest="command")
+    open_parser = subparsers.add_parser(
+        "open", help="計画 JSON をエディタで開く（MCP なしのデバッグモード）"
+    )
+    open_parser.add_argument("plan_file", help="計画 JSON ファイルのパス")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
-    parser.parse_args(argv)
-    # サブコマンド（open / serve）と TUI 常駐起動は後続マイルストーンで追加する
+    args = parser.parse_args(argv)
+    if args.command == "open":
+        from agenttakt.tui.app import run_open
+
+        return run_open(args.plan_file)
+    # サブコマンド未指定時の TUI 常駐起動（IdleScreen）は M3 で実装する
     parser.print_help()
     return 0

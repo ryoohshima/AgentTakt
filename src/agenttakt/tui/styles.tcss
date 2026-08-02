@@ -1,0 +1,19 @@
+GraphViewport {
+    layers: edges nodes overlay;
+    background: $surface;
+    scrollbar-size: 1 1;
+}
+
+EdgeLayer {
+    layer: edges;
+}
+
+NodeWidget {
+    layer: nodes;
+    position: absolute;
+    background: $panel;
+    padding: 0 1;
+    border: round $primary;
+    border-title-align: left;
+    border-subtitle-align: right;
+}
