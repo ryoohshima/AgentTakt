@@ -65,6 +65,7 @@ class NodeWidget(Static):
         self._press_screen = Offset(0, 0)
         self._origin = Offset(0, 0)
         self._moved = False
+        self._pre_drag: dict = {}
 
     def on_mount(self) -> None:
         self._apply_border()
@@ -111,6 +112,8 @@ class NodeWidget(Static):
             self._mode = "move"
             self._origin = Offset(self.rect.x, self.rect.y)
             self._moved = False
+            # ドラッグ確定時に undo へ積むため、移動前の状態を控える
+            self._pre_drag = self.screen.snapshot_plan()  # type: ignore[attr-defined]
         self.capture_mouse()
         event.stop()
 
@@ -139,6 +142,7 @@ class NodeWidget(Static):
         if mode == "edge":
             self.screen.finish_edge_drag(self._canvas_pos(event))  # type: ignore[attr-defined]
         elif self._moved:
+            self.screen.push_undo(self._pre_drag)  # type: ignore[attr-defined]
             self.screen.refresh_graph()  # type: ignore[attr-defined]
         else:
             self.screen.select_node(self.node.id)  # type: ignore[attr-defined]

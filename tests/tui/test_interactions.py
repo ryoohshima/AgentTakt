@@ -166,6 +166,35 @@ async def test_reject_with_reason(tmp_path):
     assert data["status"] == "rejected"
 
 
+async def test_undo_redo_delete():
+    app = make_app()
+    async with app.run_test(size=SIZE) as pilot:
+        editor = app.screen
+        editor.select_node("a")
+        await pilot.press("d")
+        assert len(editor.plan.nodes) == 2
+        await pilot.press("u")  # undo
+        await pilot.pause()
+        assert len(editor.plan.nodes) == 3
+        assert editor._node_widget("a") is not None
+        assert len(editor.plan.edges) == 1
+        await pilot.press("U")  # redo
+        await pilot.pause()
+        assert len(editor.plan.nodes) == 2
+        assert editor.plan.edges == []
+
+
+async def test_undo_edge_creation():
+    app = make_app()
+    async with app.run_test(size=SIZE) as pilot:
+        editor = app.screen
+        editor.create_edge("a", "c")
+        assert len(editor.plan.edges) == 2
+        await pilot.press("u")
+        await pilot.pause()
+        assert [e.id for e in editor.plan.edges] == ["e1"]
+
+
 async def test_panel_toggle():
     app = make_app()
     async with app.run_test(size=SIZE) as pilot:

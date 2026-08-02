@@ -13,12 +13,24 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--version", action="version", version=f"agenttakt {__version__}"
     )
+    parser.add_argument(
+        "--edges",
+        choices=["braille", "orthogonal"],
+        default="braille",
+        help="エッジ描画方式（既定: braille 曲線）",
+    )
     subparsers = parser.add_subparsers(dest="command")
     open_parser = subparsers.add_parser(
         "open", help="計画 JSON をエディタで開く（MCP なしのデバッグモード）"
     )
     open_parser.add_argument("plan_file", help="計画 JSON ファイルのパス")
     open_parser.add_argument("--out", help="承認/却下後の計画 JSON の出力先")
+    open_parser.add_argument(
+        "--edges",
+        choices=["braille", "orthogonal"],
+        default="braille",
+        help="エッジ描画方式（既定: braille 曲線）",
+    )
     subparsers.add_parser(
         "serve", help="MCP stdio サーバーを起動する（Executor が spawn する用）"
     )
@@ -31,7 +43,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "open":
         from agenttakt.tui.app import run_open
 
-        return run_open(args.plan_file, args.out)
+        return run_open(args.plan_file, args.out, args.edges)
     if args.command == "serve":
         from agenttakt.server.mcp_server import run
 
@@ -39,4 +51,4 @@ def main(argv: list[str] | None = None) -> int:
     # サブコマンド未指定時は TUI 常駐モード
     from agenttakt.tui.app import run_standalone
 
-    return run_standalone()
+    return run_standalone(args.edges)

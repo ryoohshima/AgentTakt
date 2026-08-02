@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
+import signal
 from collections import deque
 from pathlib import Path
 
@@ -30,11 +32,13 @@ class AgentTaktApp(App):
         plan: Plan | None = None,
         out_path: str | None = None,
         socket_path: Path | None = None,
+        edge_style: str = "braille",
     ) -> None:
         super().__init__()
         self._initial_plan = plan
         self._out_path = out_path
         self._socket_path = socket_path or default_socket_path()
+        self.edge_style = edge_style  # "braille" | "orthogonal"
         self._bridge: BridgeServer | None = None
         self._queue: deque[PendingReview] = deque()
         self._active: PendingReview | None = None
@@ -64,6 +68,10 @@ class AgentTaktApp(App):
             on_disconnect=self._on_disconnect,
         )
         await self._bridge.start()
+        # SIGTERM でも socket を後始末してから終了する（unlink は stop() が行う）
+        loop = asyncio.get_running_loop()
+        with contextlib.suppress(NotImplementedError, ValueError):
+            loop.add_signal_handler(signal.SIGTERM, self.exit)
         try:
             await asyncio.Event().wait()  # アプリ終了（worker キャンセル）まで常駐
         finally:
@@ -117,8 +125,8 @@ def load_plan(path: str | Path) -> Plan:
     return apply_auto_layout(Plan.model_validate(raw))
 
 
-def run_open(plan_path: str, out_path: str | None = None) -> int:
-    app = AgentTaktApp(plan=load_plan(plan_path), out_path=out_path)
+def run_open(plan_path: str, out_path: str | None = None, edge_style: str = "braille") -> int:
+    app = AgentTaktApp(plan=load_plan(plan_path), out_path=out_path, edge_style=edge_style)
     result = app.run()
     if isinstance(result, ReviewResult):
         detail = f"（{result.reason}）" if result.reason else ""
@@ -128,6 +136,6 @@ def run_open(plan_path: str, out_path: str | None = None) -> int:
     return 0
 
 
-def run_standalone() -> int:
-    AgentTaktApp().run()
+def run_standalone(edge_style: str = "braille") -> int:
+    AgentTaktApp(edge_style=edge_style).run()
     return 0

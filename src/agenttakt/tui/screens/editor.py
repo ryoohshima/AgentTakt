@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 
 from textual.app import ComposeResult
@@ -39,6 +40,8 @@ class EditorScreen(Screen[ReviewResult]):
         Binding("n", "add_node", "ノード追加"),
         Binding("d,delete", "delete_selected", "削除"),
         Binding("p", "toggle_panel", "パネル"),
+        Binding("u", "undo", "Undo"),
+        Binding("U", "redo", "Redo", show=False),
         Binding("up", "nudge('up')", "移動", show=False),
         Binding("down", "nudge('down')", "移動", show=False),
         Binding("left", "nudge('left')", "移動", show=False),
@@ -54,6 +57,11 @@ class EditorScreen(Screen[ReviewResult]):
         # ("node" | "edge", id)
         self._selected: tuple[str, str] | None = None
         self._edge_source: str | None = None
+        self._undo_stack: list[dict] = []
+        self._redo_stack: list[dict] = []
+        # 連続入力（title 編集の 1 打鍵ごと等）を 1 つの undo 単位にまとめるためのキー
+        self._last_edit_key: tuple | None = None
+        self._started = time.monotonic()
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
@@ -68,7 +76,14 @@ class EditorScreen(Screen[ReviewResult]):
 
     def on_mount(self) -> None:
         self.sub_title = self.summary or self.plan.graph_id
+        self.set_interval(1.0, self._update_elapsed)
         self.refresh_graph()
+
+    def _update_elapsed(self) -> None:
+        """承認待ちの経過時間をサブタイトルに表示する（放置に気づかせる）。"""
+        elapsed = int(time.monotonic() - self._started)
+        base = self.summary or self.plan.graph_id
+        self.sub_title = f"{base}  ⏱ {elapsed // 60:02d}:{elapsed % 60:02d}"
 
     # --- 描画 ---
 
@@ -184,6 +199,7 @@ class EditorScreen(Screen[ReviewResult]):
         if cycle:
             self.notify("循環になるため接続できません: " + " -> ".join(cycle), severity="error")
             return
+        self.checkpoint()
         self.plan.edges.append(
             Edge(id=self._unique_id("edge", (e.id for e in self.plan.edges)), source=source, target=target)
         )
@@ -197,17 +213,61 @@ class EditorScreen(Screen[ReviewResult]):
             index += 1
         return f"{prefix}_{index}"
 
+    # --- undo / redo ---
+
+    def snapshot_plan(self) -> dict:
+        return self.plan.model_dump()
+
+    def push_undo(self, snapshot: dict, edit_key: tuple | None = None) -> None:
+        """編集前スナップショットを積む。同一 edit_key の連続編集は 1 単位にまとめる。"""
+        if edit_key is not None and edit_key == self._last_edit_key:
+            return
+        self._last_edit_key = edit_key
+        self._undo_stack.append(snapshot)
+        if len(self._undo_stack) > 100:
+            self._undo_stack.pop(0)
+        self._redo_stack.clear()
+
+    def checkpoint(self, edit_key: tuple | None = None) -> None:
+        self.push_undo(self.snapshot_plan(), edit_key)
+
+    async def action_undo(self) -> None:
+        if not self._undo_stack:
+            self.notify("これ以上戻れません", severity="warning")
+            return
+        self._redo_stack.append(self.snapshot_plan())
+        self._last_edit_key = None
+        await self._restore(self._undo_stack.pop())
+
+    async def action_redo(self) -> None:
+        if not self._redo_stack:
+            self.notify("やり直す操作がありません", severity="warning")
+            return
+        self._undo_stack.append(self.snapshot_plan())
+        self._last_edit_key = None
+        await self._restore(self._redo_stack.pop())
+
+    async def _restore(self, snapshot: dict) -> None:
+        self.deselect()
+        self.plan = Plan.model_validate(snapshot)
+        viewport = self.query_one(GraphViewport)
+        await self.query(NodeWidget).remove()
+        await viewport.mount_all(NodeWidget(node) for node in self.plan.nodes)
+        self.refresh_graph()
+
     # --- 編集操作 ---
 
     def apply_node_edit(self, node_id: str, field: str, value) -> None:
         widget = self._node_widget(node_id)
         if widget is None:
             return
+        self.checkpoint(edit_key=("edit", node_id, field))
         setattr(widget.node, field, value)
         widget.refresh_content()
         self.refresh_graph()  # サイズ変化に追従
 
     async def action_add_node(self) -> None:
+        self.checkpoint()
         viewport = self.query_one(GraphViewport)
         node = Node(
             id=self._unique_id("node", (n.id for n in self.plan.nodes)),
@@ -227,6 +287,7 @@ class EditorScreen(Screen[ReviewResult]):
     async def action_delete_selected(self) -> None:
         if self._selected is None:
             return
+        self.checkpoint()
         kind, ident = self._selected
         self.deselect()
         if kind == "edge":
@@ -247,6 +308,7 @@ class EditorScreen(Screen[ReviewResult]):
             widget = self._node_widget(self._selected[1])
             if widget is None:
                 return
+            self.checkpoint(edit_key=("nudge", widget.node.id))
             dx, dy = _NUDGE[direction]
             node = widget.node
             node.position = Position(
