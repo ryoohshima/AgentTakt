@@ -35,6 +35,10 @@ venv/
 .bundle/
 vendor/
 
+# pytest / pytest-textual-snapshot
+.pytest_cache/
+snapshot_report.html
+
 # ビルド成果物（汎用）
 dist/
 build/
