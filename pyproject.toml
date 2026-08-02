@@ -1,0 +1,34 @@
+[project]
+name = "agenttakt"
+version = "0.1.0"
+description = "MCP-TUI Agent Plan Approver — AI エージェントの実行計画をターミナルのノードエディタでレビュー・編集・承認する"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "textual>=8.2",
+    "mcp>=1.9,<2",
+    "pydantic>=2.7",
+]
+
+[project.scripts]
+agenttakt = "agenttakt.cli:main"
+at = "agenttakt.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "pytest-textual-snapshot",
+    "textual-dev",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agenttakt"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
