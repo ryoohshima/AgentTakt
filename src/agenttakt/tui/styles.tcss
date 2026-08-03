@@ -84,7 +84,8 @@ ConfirmApproveScreen, RejectReasonScreen, HelpScreen {
 }
 
 HelpScreen .help-dialog {
-    width: 76;
+    width: 90%;
+    max-width: 110;
     height: 85%;
     border: round $primary;
     background: $panel;
