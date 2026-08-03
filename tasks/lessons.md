@@ -15,6 +15,13 @@
 - **macOS の `sun_path` は 104 バイト**: pytest の `tmp_path` は深すぎて `AF_UNIX path too long` になる。socket テストは `tempfile.mkdtemp` 直下の短いパスを使う（tests/conftest.py の `sock_path` fixture）。
 - **通常ファイルへの connect は `ENOTSOCK`（errno 38）**: `ConnectionRefusedError` だけ捕まえると漏れる。stale 判定は `OSError` 全体で受ける。
 
+## レイヤー描画（ユーザー報告バグより）
+
+- **状況**: エッジ作成のラバーバンドを最前面 overlay レイヤーの全面ウィジェットで描いたところ、ドラッグ中に仮線以外の全描画が消えるとユーザーから報告を受けた。
+- **ミス/原因**: Textual のウィジェットは不透明で、render_line が返す空白セルも下のレイヤーを覆い隠す。全面サイズの前面レイヤーは「線以外の全セル」で画面を塗り潰していた。
+- **再発防止ルール**: 部分的な装飾（仮線・ハイライト等）を前面レイヤーの全面ウィジェットで描くな。既存の背面レイヤーのセルバッファに合成するか、装飾の bounding box に限定したウィジェットにせよ。また TUI の描画変更は「操作の途中状態」（ドラッグ最中など）を export_screenshot で目視確認してから完了とせよ（静止状態のテストだけでは覆い隠しバグは検出できない）。
+- **関連ファイル**: src/agenttakt/tui/widgets/edge_layer.py（set_preview / cells_for_row）
+
 ## テスト運用
 
 - **rtk フィルタ経由の pytest 出力は要約される**（"No tests collected" 等が実態と異なることがある）。切り分け時は `rtk proxy uv run python -m pytest -v` で素の出力を見る。
