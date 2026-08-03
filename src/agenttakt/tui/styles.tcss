@@ -3,7 +3,7 @@
 }
 
 GraphViewport {
-    layers: edges nodes overlay;
+    layers: edges nodes;
     width: 1fr;
     background: $surface;
     scrollbar-size: 1 1;
@@ -11,11 +11,6 @@ GraphViewport {
 
 EdgeLayer {
     layer: edges;
-}
-
-RubberBand {
-    layer: overlay;
-    display: none;
 }
 
 NodeWidget {
@@ -49,8 +44,16 @@ ParamPanel Input {
     margin-bottom: 1;
 }
 
-ParamPanel TextArea {
-    height: 10;
+ParamPanel #panel-data-fields {
+    height: auto;
+}
+
+ParamPanel .data-key {
+    color: $text-muted;
+}
+
+ParamPanel #panel-data-new-key {
+    margin-top: 1;
 }
 
 #idle-box {

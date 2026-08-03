@@ -2,6 +2,7 @@ import json
 
 from agenttakt.models import Plan
 from agenttakt.tui.app import AgentTaktApp
+from agenttakt.tui.widgets.edge_layer import EdgeLayer
 from agenttakt.tui.widgets.node import NodeWidget
 from agenttakt.tui.widgets.param_panel import ParamPanel
 
@@ -15,7 +16,13 @@ def build_plan() -> Plan:
         {
             "graph_id": "interaction-test",
             "nodes": [
-                {"id": "a", "type": "grep", "title": "A", "position": {"x": 0, "y": 0}},
+                {
+                    "id": "a",
+                    "type": "grep",
+                    "title": "A",
+                    "position": {"x": 0, "y": 0},
+                    "data": {"pattern": "useAuth", "files": ["src/**"]},
+                },
                 {"id": "b", "type": "edit", "title": "B", "position": {"x": 40, "y": 0}},
                 {"id": "c", "type": "test", "title": "C", "position": {"x": 40, "y": 10}},
             ],
@@ -64,6 +71,22 @@ async def test_rubberband_creates_edge():
         await pilot.hover(node_c, offset=(3, 1))
         await pilot.mouse_up(node_c, offset=(3, 1))
         assert any(e.source == "a" and e.target == "c" for e in editor.plan.edges)
+
+
+async def test_edge_drag_preview_merges_into_edge_layer():
+    """仮線は EdgeLayer に合成され、前面レイヤーで既存描画を覆い隠さない。"""
+    app = make_app()
+    async with app.run_test(size=SIZE) as pilot:
+        editor = app.screen
+        node_a = editor._node_widget("a")
+        node_c = editor._node_widget("c")
+        edge_layer = app.screen.query_one(EdgeLayer)
+        await pilot.mouse_down(node_a, offset=(node_a.rect.width - 1, 1))
+        await pilot.hover(node_c, offset=(3, 1))
+        assert edge_layer._preview_rows  # 仮線が描かれている
+        assert edge_layer._rows  # 既存エッジ・ポートのバッファも残っている
+        await pilot.mouse_up(node_c, offset=(3, 1))
+        assert not edge_layer._preview_rows  # ドロップで消える
 
 
 async def test_create_edge_rejects_cycle():
@@ -137,6 +160,46 @@ async def test_param_edit_updates_node():
         widget = editor._node_widget("a")
         assert widget.node.title == "Renamed Step"
         assert widget.border_title == "Renamed Step"
+
+
+async def test_param_data_fields_split_by_key():
+    """data は JSON 直書きではなく、キーごとの入力欄で編集できる。"""
+    app = make_app()
+    async with app.run_test(size=SIZE) as pilot:
+        editor = app.screen
+        editor.select_node("a")
+        await pilot.pause()
+        fields = {
+            field.name: field
+            for field in app.screen.query("#panel-data-fields Input").results(Input)
+        }
+        assert set(fields) == {"pattern", "files"}
+        # 文字列値はそのまま編集して反映される
+        fields["pattern"].value = "signIn"
+        await pilot.pause()
+        assert editor._node_widget("a").node.data["pattern"] == "signIn"
+        # リスト値は JSON 断片として parse されて反映される
+        fields["files"].value = '["app/**", "lib/**"]'
+        await pilot.pause()
+        assert editor._node_widget("a").node.data["files"] == ["app/**", "lib/**"]
+
+
+async def test_param_data_add_new_key():
+    app = make_app()
+    async with app.run_test(size=SIZE) as pilot:
+        editor = app.screen
+        editor.select_node("a")
+        await pilot.pause()
+        new_key = app.screen.query_one("#panel-data-new-key", Input)
+        new_key.focus()
+        new_key.value = "timeout"
+        await pilot.press("enter")
+        await pilot.pause()
+        assert editor._node_widget("a").node.data["timeout"] == ""
+        names = {
+            field.name for field in app.screen.query("#panel-data-fields Input").results(Input)
+        }
+        assert "timeout" in names
 
 
 async def test_approve_writes_out_file(tmp_path):

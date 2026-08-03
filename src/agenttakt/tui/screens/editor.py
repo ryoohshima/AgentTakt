@@ -12,7 +12,7 @@ from textual.widgets import Footer, Header
 from agenttakt.models.plan import Edge, Node, Plan, Position, find_cycle
 from agenttakt.tui.geometry import PAD_X, PAD_Y, Rect, output_port
 from agenttakt.tui.screens.modals import ConfirmApproveScreen, RejectReasonScreen
-from agenttakt.tui.widgets.edge_layer import EdgeLayer, RubberBand
+from agenttakt.tui.widgets.edge_layer import EdgeLayer
 from agenttakt.tui.widgets.node import NodeWidget, node_size
 from agenttakt.tui.widgets.param_panel import ParamPanel
 
@@ -35,8 +35,8 @@ class GraphViewport(ScrollableContainer):
 
 class EditorScreen(Screen[ReviewResult]):
     BINDINGS = [
-        Binding("a", "approve", "承認"),
-        Binding("r", "reject", "却下"),
+        Binding("a", "approve", "プラン承認"),
+        Binding("r", "reject", "プラン却下"),
         Binding("n", "add_node", "ノード追加"),
         Binding("d,delete", "delete_selected", "削除"),
         Binding("p", "toggle_panel", "パネル"),
@@ -68,7 +68,6 @@ class EditorScreen(Screen[ReviewResult]):
         with Horizontal(id="editor-body"):
             with GraphViewport():
                 yield EdgeLayer()
-                yield RubberBand()
                 for node in self.plan.nodes:
                     yield NodeWidget(node)
             yield ParamPanel()
@@ -108,10 +107,10 @@ class EditorScreen(Screen[ReviewResult]):
             canvas_height = max(rect.bottom for rect in rects.values()) + 4
         else:
             canvas_width, canvas_height = 40, 10
-        for layer in (self.query_one(EdgeLayer), self.query_one(RubberBand)):
-            layer.styles.width = canvas_width
-            layer.styles.height = canvas_height
-        self.query_one(EdgeLayer).set_graph(rects, self.plan.edges)
+        edge_layer = self.query_one(EdgeLayer)
+        edge_layer.styles.width = canvas_width
+        edge_layer.styles.height = canvas_height
+        edge_layer.set_graph(rects, self.plan.edges)
 
     # --- 選択 ---
 
@@ -151,12 +150,12 @@ class EditorScreen(Screen[ReviewResult]):
 
     def start_edge_drag(self, node_id: str) -> None:
         self._edge_source = node_id
-        rubber = self.query_one(RubberBand)
-        rubber.styles.display = "block"
         rect = self._rects.get(node_id)
         if rect:
             port = output_port(rect)
-            rubber.set_line((port[0] + 1, port[1]), (port[0] + 1, port[1]))
+            self.query_one(EdgeLayer).set_preview(
+                (port[0] + 1, port[1]), (port[0] + 1, port[1])
+            )
 
     def update_edge_drag(self, pos: tuple[int, int]) -> None:
         if self._edge_source is None:
@@ -165,13 +164,11 @@ class EditorScreen(Screen[ReviewResult]):
         if rect is None:
             return
         port = output_port(rect)
-        self.query_one(RubberBand).set_line((port[0] + 1, port[1]), pos)
+        self.query_one(EdgeLayer).set_preview((port[0] + 1, port[1]), pos)
 
     def finish_edge_drag(self, pos: tuple[int, int]) -> None:
         source, self._edge_source = self._edge_source, None
-        rubber = self.query_one(RubberBand)
-        rubber.clear()
-        rubber.styles.display = "none"
+        self.query_one(EdgeLayer).clear_preview()
         if source is None:
             return
         target = self._node_at(pos, exclude=source)
@@ -259,7 +256,7 @@ class EditorScreen(Screen[ReviewResult]):
 
     def apply_node_edit(self, node_id: str, field: str, value) -> None:
         widget = self._node_widget(node_id)
-        if widget is None:
+        if widget is None or getattr(widget.node, field) == value:
             return
         self.checkpoint(edit_key=("edit", node_id, field))
         setattr(widget.node, field, value)

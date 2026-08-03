@@ -43,9 +43,12 @@ class CellSurface(Widget):
     def cell_style(self, cell: Cell) -> Style:
         raise NotImplementedError
 
+    def cells_for_row(self, y: int) -> dict[int, Cell] | None:
+        return self._rows.get(y)
+
     def render_line(self, y: int) -> Strip:
         width = self.size.width
-        cells = self._rows.get(y)
+        cells = self.cells_for_row(y)
         if not cells:
             return Strip.blank(width)
         segments: list[Segment] = []
@@ -72,6 +75,9 @@ class EdgeLayer(CellSurface):
     _edge_style = Style(color="#565f89")
     _selected_style = Style(color="#e0af68", bold=True)
     _port_style = Style(color="#7aa2f7", bold=True)
+    _preview_style = Style(color="#e0af68", bold=True)
+
+    PREVIEW_ID = "__preview__"
 
     def __init__(self) -> None:
         super().__init__()
@@ -79,6 +85,9 @@ class EdgeLayer(CellSurface):
         self._ports: dict[tuple[int, int], tuple[str, str]] = {}
         self._selected_edge: str | None = None
         self._dragging_from: str | None = None
+        # エッジ作成中の仮線（このレイヤーに合成して描く。前面レイヤーを重ねると
+        # 空白セルが下のノードを覆い隠すため、overlay 方式は使わない）
+        self._preview_rows: dict[int, dict[int, Cell]] = {}
 
     @property
     def selected_edge(self) -> str | None:
@@ -115,6 +124,28 @@ class EdgeLayer(CellSurface):
         self._ports = ports
         self.load_buffer(buffer)
 
+    def set_preview(self, start: tuple[int, int], end: tuple[int, int]) -> None:
+        """エッジ作成中の仮線を描く。"""
+        buffer = OrthogonalRenderer().rasterize([route_to_point(start, end, self.PREVIEW_ID)])
+        rows: dict[int, dict[int, Cell]] = defaultdict(dict)
+        for (x, y), cell in buffer.items():
+            rows[y][x] = cell
+        self._preview_rows = dict(rows)
+        self.refresh()
+
+    def clear_preview(self) -> None:
+        self._preview_rows = {}
+        self.refresh()
+
+    def cells_for_row(self, y: int) -> dict[int, Cell] | None:
+        base = self._rows.get(y)
+        preview = self._preview_rows.get(y)
+        if not preview:
+            return base
+        merged = dict(base or {})
+        merged.update(preview)
+        return merged
+
     def edge_at(self, x: int, y: int) -> str | None:
         """セル座標にあるエッジ ID（ヒットテスト用）。"""
         cell = self._rows.get(y, {}).get(x)
@@ -124,6 +155,8 @@ class EdgeLayer(CellSurface):
         _, edge_id = cell
         if edge_id is None:
             return self._port_style
+        if edge_id == self.PREVIEW_ID:
+            return self._preview_style
         if edge_id == self._selected_edge:
             return self._selected_style
         return self._edge_style
@@ -162,16 +195,3 @@ class EdgeLayer(CellSurface):
         event.stop()
 
 
-class RubberBand(CellSurface):
-    """エッジ新規作成中の仮線。overlay レイヤーに置き、ドラッグ中のみ表示する。"""
-
-    _style = Style(color="#e0af68", bold=True)
-
-    def set_line(self, start: tuple[int, int], end: tuple[int, int]) -> None:
-        self.load_buffer(OrthogonalRenderer().rasterize([route_to_point(start, end)]))
-
-    def clear(self) -> None:
-        self.load_buffer({})
-
-    def cell_style(self, cell: Cell) -> Style:
-        return self._style
