@@ -48,6 +48,7 @@ class EditorScreen(Screen[ReviewResult]):
         Binding("left", "nudge('left')", "移動", show=False),
         Binding("right", "nudge('right')", "移動", show=False),
         Binding("question_mark", "show_help", "ヘルプ", key_display="?"),
+        Binding("escape", "deselect", "選択解除", show=False),
         Binding("q", "quit_editor", "終了"),
     ]
 
@@ -320,6 +321,9 @@ class EditorScreen(Screen[ReviewResult]):
 
     def action_show_help(self) -> None:
         self.app.push_screen(HelpScreen())
+
+    def action_deselect(self) -> None:
+        self.deselect()
 
     def action_toggle_panel(self) -> None:
         panel = self.query_one(ParamPanel)

@@ -258,6 +258,22 @@ async def test_undo_edge_creation():
         assert [e.id for e in editor.plan.edges] == ["e1"]
 
 
+async def test_escape_deselects():
+    app = make_app()
+    async with app.run_test(size=SIZE) as pilot:
+        editor = app.screen
+        editor.select_node("a")
+        assert editor._selected == ("node", "a")
+        await pilot.press("escape")
+        await pilot.pause()
+        assert editor._selected is None
+        # エッジ選択も解除できる
+        editor.select_edge("e1")
+        await pilot.press("escape")
+        await pilot.pause()
+        assert editor._selected is None
+
+
 async def test_help_screen_opens_and_closes():
     from agenttakt.tui.screens.help import HelpScreen
 
