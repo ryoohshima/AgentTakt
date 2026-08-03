@@ -13,9 +13,9 @@ class ConfirmApproveScreen(ModalScreen[bool]):
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="dialog"):
-            yield Static("この計画を承認しますか？", classes="dialog-message")
+            yield Static("このプランを承認しますか？", classes="dialog-message")
             with Horizontal(classes="dialog-buttons"):
-                yield Button("承認", variant="success", id="ok")
+                yield Button("プラン承認", variant="success", id="ok")
                 yield Button("キャンセル", id="cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -29,10 +29,10 @@ class RejectReasonScreen(ModalScreen[str | None]):
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="dialog"):
-            yield Static("却下理由（Executor に返されます）", classes="dialog-message")
+            yield Static("プラン却下の理由（Executor に返されます）", classes="dialog-message")
             yield Input(placeholder="理由を入力", id="reject-reason")
             with Horizontal(classes="dialog-buttons"):
-                yield Button("却下", variant="error", id="ok")
+                yield Button("プラン却下", variant="error", id="ok")
                 yield Button("キャンセル", id="cancel")
 
     def on_mount(self) -> None:

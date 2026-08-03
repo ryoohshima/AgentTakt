@@ -83,8 +83,8 @@ uv run agenttakt open examples/sample_plan.json --out edited.json
 
 | キー | 動作 |
 |---|---|
-| `a` | 承認（確認ダイアログ） |
-| `r` | 却下（理由入力） |
+| `a` | プラン承認（確認ダイアログ） |
+| `r` | プラン却下（理由入力） |
 | `n` | ノード追加 |
 | `d` / `Delete` | 選択中のノード/エッジを削除 |
 | `u` / `U` | Undo / Redo |
