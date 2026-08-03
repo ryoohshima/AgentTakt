@@ -54,6 +54,20 @@ async def test_standalone_approve_flow(sock_path):
         await wait_for(lambda: isinstance(app.screen, IdleScreen), pilot)
 
 
+async def test_quit_while_review_rejects_pending(sock_path):
+    """レビュー中にアプリを終了しても Executor には却下応答が返る。"""
+    app = AgentTaktApp(socket_path=sock_path)
+    async with app.run_test(size=SIZE) as pilot:
+        await wait_for(sock_path.exists, pilot)
+        task = asyncio.create_task(request_review(make_request(), sock_path))
+        await wait_for(lambda: isinstance(app.screen, EditorScreen), pilot)
+        app.exit()
+        await pilot.pause()
+    result = await asyncio.wait_for(task, 3)
+    assert result.decision == "rejected"
+    assert result.reason is not None and "closed" in result.reason
+
+
 async def test_standalone_disconnect_returns_to_idle(sock_path):
     sock = sock_path
     app = AgentTaktApp(socket_path=sock)

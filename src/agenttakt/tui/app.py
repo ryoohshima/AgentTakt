@@ -75,7 +75,25 @@ class AgentTaktApp(App):
         try:
             await asyncio.Event().wait()  # アプリ終了（worker キャンセル）まで常駐
         finally:
+            # 終了時も Executor を宙吊りにしない: 未応答の依頼へ却下を返してから閉じる
+            await self._flush_pending(
+                "AgentTakt TUI was closed before the review finished. "
+                "Ask the user to restart it, then call request_approval again."
+            )
             await self._bridge.stop()
+
+    async def _flush_pending(self, reason: str) -> None:
+        pendings = [p for p in ([self._active] if self._active else []) + list(self._queue)]
+        self._queue.clear()
+        self._active = None
+        for pending in pendings:
+            response = ReviewResponse(
+                request_id=pending.request.request_id,
+                decision="rejected",
+                plan=pending.request.plan,
+                reason=reason,
+            )
+            await self._bridge.respond(pending, response)
 
     def _on_request(self, pending: PendingReview) -> None:
         self._queue.append(pending)
