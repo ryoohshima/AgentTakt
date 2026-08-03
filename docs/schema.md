@@ -55,6 +55,18 @@ Executor（AI エージェント）と AgentTakt の間で受け渡す計画（P
 | `source` | string | ✔ | 依存元ノード ID |
 | `target` | string | ✔ | 依存先ノード ID |
 
+## type と data には何を書けばよいか
+
+`type` と `data` は **Executor（AI エージェント）が解釈する自由な語彙**であり、AgentTakt は中身を検証しない。プラン承認後、編集済み JSON はそのまま Executor に返り、Executor がそれを解釈して実行する。つまり「Executor に伝わる言葉」で書けばよい（自然言語の指示でも構わない）。
+
+- `type`: ステップの種別。TUI ではノードの色分けと下辺ラベルに使われる。慣例: `grep`（検索）/ `read`（読解）/ `edit`（編集）/ `test`（テスト）/ `command`（コマンド実行）/ `docs`（文書更新）
+- `data`: そのステップのパラメータ。type ごとの慣例:
+  - `grep` → `pattern`（検索パターン）, `files`（対象グロブのリスト）
+  - `edit` → `file`（対象ファイル）, `strategy`（編集方針）
+  - `test` → `command`（実行コマンド）
+
+同じ内容は TUI 内で `?` キーを押すと表示されるヘルプにも記載している。
+
 ## バリデーション規則
 
 `request_approval` の入口（および TUI での編集確定時）に以下を検証する。違反は `ValueError` として Executor に返す。

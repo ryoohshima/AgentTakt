@@ -90,6 +90,7 @@ uv run agenttakt open examples/sample_plan.json --out edited.json
 | `u` / `U` | Undo / Redo |
 | 矢印 | 選択ノードを 1 セル移動（マウスの微調整） |
 | `p` | パラメータパネルの表示切替 |
+| `?` | ヘルプ（操作一覧と type / data の書き方） |
 | `q` | 終了 |
 
 マウス: ノードをドラッグで移動、ノード右辺（出力ポート ●）からドラッグして相手ノードで離すとエッジ作成。

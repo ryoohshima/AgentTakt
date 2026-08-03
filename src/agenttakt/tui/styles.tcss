@@ -79,8 +79,16 @@ ParamPanel #panel-data-new-key {
     text-align: center;
 }
 
-ConfirmApproveScreen, RejectReasonScreen {
+ConfirmApproveScreen, RejectReasonScreen, HelpScreen {
     align: center middle;
+}
+
+HelpScreen .help-dialog {
+    width: 76;
+    height: 85%;
+    border: round $primary;
+    background: $panel;
+    padding: 1 2;
 }
 
 .dialog {

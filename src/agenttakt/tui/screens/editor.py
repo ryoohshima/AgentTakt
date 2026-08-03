@@ -11,6 +11,7 @@ from textual.widgets import Footer, Header
 
 from agenttakt.models.plan import Edge, Node, Plan, Position, find_cycle
 from agenttakt.tui.geometry import PAD_X, PAD_Y, Rect, output_port
+from agenttakt.tui.screens.help import HelpScreen
 from agenttakt.tui.screens.modals import ConfirmApproveScreen, RejectReasonScreen
 from agenttakt.tui.widgets.edge_layer import EdgeLayer
 from agenttakt.tui.widgets.node import NodeWidget, node_size
@@ -46,6 +47,7 @@ class EditorScreen(Screen[ReviewResult]):
         Binding("down", "nudge('down')", "移動", show=False),
         Binding("left", "nudge('left')", "移動", show=False),
         Binding("right", "nudge('right')", "移動", show=False),
+        Binding("question_mark", "show_help", "ヘルプ", key_display="?"),
         Binding("q", "quit_editor", "終了"),
     ]
 
@@ -315,6 +317,9 @@ class EditorScreen(Screen[ReviewResult]):
         else:
             dx, dy = _NUDGE[direction]
             self.query_one(GraphViewport).scroll_relative(x=dx * 4, y=dy * 2, animate=False)
+
+    def action_show_help(self) -> None:
+        self.app.push_screen(HelpScreen())
 
     def action_toggle_panel(self) -> None:
         panel = self.query_one(ParamPanel)

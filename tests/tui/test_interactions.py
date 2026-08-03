@@ -258,6 +258,19 @@ async def test_undo_edge_creation():
         assert [e.id for e in editor.plan.edges] == ["e1"]
 
 
+async def test_help_screen_opens_and_closes():
+    from agenttakt.tui.screens.help import HelpScreen
+
+    app = make_app()
+    async with app.run_test(size=SIZE) as pilot:
+        await pilot.press("question_mark")
+        await pilot.pause()
+        assert isinstance(app.screen, HelpScreen)
+        await pilot.press("escape")
+        await pilot.pause()
+        assert not isinstance(app.screen, HelpScreen)
+
+
 async def test_panel_toggle():
     app = make_app()
     async with app.run_test(size=SIZE) as pilot:
