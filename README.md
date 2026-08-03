@@ -1,88 +1,137 @@
-# github-template
+# AgentTakt
 
-新規 GitHub リポジトリ作成時に共通利用する設定一式の Template Repository。
-`.github/` 配下の community health files に加え、リポジトリ全体の足場（`.gitignore` / `.editorconfig` / `CLAUDE.md` 等）も含む。
+AI エージェント（Executor）が生成したタスク実行計画（Plan）を、人間がターミナル上で視覚的にレビュー・編集・承認するための MCP（Model Context Protocol）サーバー兼 TUI ツール。
 
-## 使い方
+Claude Code 等の Executor が MCP 経由で送ってきた計画 JSON を、ComfyUI 風のビジュアルノードエディタとしてターミナルに描画する。人間はマウスとキーボードでノードの移動・追加・削除、依存関係（エッジ）の線引き、パラメータ編集を行い、「Approve」すると編集後の JSON が Executor に返って実行が始まる。
 
-### Web UI から
-
-GitHub のリポジトリ画面右上 **`Use this template`** ボタンから新リポジトリを生成する。
-
-### CLI から
-
-```sh
-gh repo create <new-repo-name> --template Ryo-Ohshima/github-template --private
+```
+Claude Code (Executor)
+   │ stdio (MCP)                          人間の別ターミナル
+   ▼                                            │
+[agenttakt serve] ── Unix domain socket ──▶ [agenttakt (TUI 常駐)]
+ MCP サーバー                                レビュー / 編集 / 承認
 ```
 
-## 含まれるファイル
+## 特徴
 
-### `.github/` 配下（GitHub 連携）
+- **ターミナル完結**: Web UI を使わず、ターミナル環境のみで動作する
+- **ビジュアルノードエディタ**: Textual による角丸ノード・依存関係の接続線・type 別色分け
+- **マウス中心の直感操作**: ノードドラッグ、ポート間の線引き（ラバーバンド）、クリック選択・削除
+- **安全な承認ループ**: サイクル検出（DAG 保証）等のバリデーションを入口で行い、エージェントが自己修正できるエラーを返す
 
-| パス | 用途 |
-|---|---|
-| `.github/PULL_REQUEST_TEMPLATE.md` | PR テンプレート（What / Why / Refs + コミット規約プレフィックス選択） |
-| `.github/ISSUE_TEMPLATE/bug_report.md` | バグ報告テンプレート（日本語） |
-| `.github/ISSUE_TEMPLATE/feature_request.md` | 機能要望テンプレート（日本語） |
-| `.github/ISSUE_TEMPLATE/config.yml` | blank issue を無効化しテンプレ選択を強制 |
-| `.github/CODEOWNERS` | PR レビュー自動割り当て（初期値 `@Ryo-Ohshima`） |
-| `.github/release.yml` | リリースノート自動カテゴリ分類（コミット規約整合） |
-| `.github/dependabot.yml` | npm + github-actions 週次自動更新 |
-| `.github/workflows/claude.yml` | `@claude` メンションで Claude Code を起動 |
-| `.github/workflows/stale.yml` | 30 日無活動 Issue/PR を自動クローズ |
-| `.github/workflows/ci.yml.example` | Node.js 用 CI 雛形（リネーム+調整して使用） |
+## 必要環境
 
-### ルート直下（リポジトリ全体の足場）
+- Python 3.10+（推奨: [uv](https://docs.astral.sh/uv/)）
+- マウスレポート対応のターミナルエミュレータ（iTerm2, WezTerm, kitty, Ghostty 等）
 
-| パス | 用途 |
-|---|---|
-| `.gitignore` | macOS / IDE / .env / node_modules / dist / ログ等を網羅した汎用版 |
-| `.editorconfig` | エディタ間のインデント・改行・文字コード統一 |
-| `.gitattributes` | 改行コード LF 正規化、バイナリ判定 |
-| `CLAUDE.md` | プロジェクト個別の Claude Code 指示雛形（global CLAUDE.md を補完） |
-| `tasks/` | Claude Code 作業記録用ディレクトリ（todo.md / lessons.md 配置先） |
-| `.claude/settings.json` | プロジェクト個別の permission allowlist 雛形 |
-
-## 新リポ生成後にやること
-
-- [ ] **`CODEOWNERS`** のユーザー名を必要に応じて変更
-- [ ] **`ci.yml.example`** を `ci.yml` にリネームし、プロジェクトのスクリプト構成に合わせて調整。Node.js 以外のスタックなら丸ごと置き換え
-- [ ] **`claude.yml`** を使う場合は Repository Secret に `CLAUDE_CODE_OAUTH_TOKEN` を設定
-- [ ] **`claude.yml`** を使う場合は `Settings → Actions → General → Workflow permissions` で **`Allow GitHub Actions to create and approve pull requests`** を有効化（オフのままだと Claude が PR 作成段階で `GitHub Actions is not permitted to create or approve pull requests` で失敗する）
-- [ ] **`dependabot.yml`** で該当しないエコシステムのブロックを削除（例: TS リポなら github-actions のみ残す）
-- [ ] **`release.yml`** のラベルが PR ラベル運用と整合しているか確認
-- [ ] **`CLAUDE.md`** にプロジェクト固有の概要・スタック・開発コマンドを記述
-- [ ] **`.gitignore`** にスタック固有のパターン（`*.env.production`, ビルド成果物名など）を追記
-
-## `claude.yml` がエラーになるとき
-
-### `Invalid API key · Fix external API key`
-
-原因は主に 2 つ：
-
-1. **input 名の取り違え** — OAuth トークンは `claude_code_oauth_token:` input、API キーは `anthropic_api_key:` input に渡す必要がある（混同すると Anthropic 側で拒否される）
-2. **secret 値の改行混入・期限切れ** — secret 設定時に `echo` を使うと末尾改行が混入することがある
-
-OAuth トークンの再発行と secret 更新は以下の手順で行う：
+## インストール
 
 ```sh
-claude setup-token   # ブラウザで Max サブスク認証 → sk-ant-oat01-... が出力される
-TOKEN='sk-ant-oat01-...'
-printf '%s' "$TOKEN" | gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo <owner>/<repo>
+git clone https://github.com/ryoohshima/AgentTakt.git
+cd AgentTakt
+uv sync
 ```
 
-`echo` ではなく `printf '%s'` を使うのがコツ（末尾改行を防ぐ）。
+## クイックスタート
 
-### `GitHub Actions is not permitted to create or approve pull requests`
+### 1. TUI を起動する（人間側・別ターミナル）
 
-Claude が変更を push した後の `gh pr create --draft` 段階で出る。`Settings → Actions → General → Workflow permissions` で **`Allow GitHub Actions to create and approve pull requests`** を有効化する。リポ作成直後はオフなので、新規リポでは必ず最初に有効化が必要。
+```sh
+uv run agenttakt        # 短縮 alias: uv run at
+```
 
-### 動作確認
+待機画面が表示され、Executor からの計画到着を待つ。
 
-Issue で `@claude ping` をコメントし、`Actions` タブで workflow run の成功と Draft PR が作成されることを確認する。
+### 2. Executor（Claude Code）に MCP サーバーを登録する
 
-## 設計方針
+プロジェクトの `.mcp.json` に以下を追加する。
 
-- スタック非依存で汎用的なものに限定（CI 本体は雛形のみ）
-- 規約は [`claude-code/rules/git-guideline.md`](https://github.com/Ryo-Ohshima/claude-code) のコミットプレフィックスと整合
-- すべてのテンプレ・メッセージは日本語
+```json
+{
+  "mcpServers": {
+    "agenttakt": {
+      "command": "uv",
+      "args": ["--directory", "/path/to/AgentTakt", "run", "agenttakt", "serve"],
+      "timeout": 1800000
+    }
+  }
+}
+```
+
+> [!IMPORTANT]
+> **`timeout`（ミリ秒）の明示設定は必須。** `request_approval` ツールは人間がレビューを終えるまでブロックする。MCP の progress notification ではクライアント側タイムアウトは延長されないため、既定のままだと承認前に打ち切られる。上記例は 30 分（`1800000`）。
+
+### 3. Executor から承認を依頼する
+
+Executor が MCP ツール `request_approval(plan, summary)` を呼ぶと、TUI に計画がノードグラフとして表示される。人間が編集して承認/却下すると、結果が以下の形で返る。
+
+```json
+{ "status": "approved", "plan": { "...編集後の計画..." }, "reason": null }
+```
+
+計画 JSON の形式は [docs/schema.md](docs/schema.md) を参照。
+
+### デバッグモード（MCP なしで試す）
+
+```sh
+uv run agenttakt open examples/sample_plan.json --out edited.json
+```
+
+ファイルから計画を読み込んでエディタを開き、承認結果を `--out` に書き出す。
+
+## キー操作
+
+| キー | 動作 |
+|---|---|
+| `a` | プラン承認（確認ダイアログ） |
+| `r` | プラン却下（理由入力） |
+| `n` | ノード追加 |
+| `d` / `Delete` | 選択中のノード/エッジを削除 |
+| `u` / `U` | Undo / Redo |
+| 矢印 | 選択ノードを 1 セル移動（マウスの微調整） |
+| `Escape` | 選択解除 |
+| `p` | パラメータパネルの表示切替 |
+| `?` | ヘルプ（操作一覧と type / data の書き方） |
+| `q` | 終了 |
+
+マウス: ノードをドラッグで移動、ノード右辺（出力ポート ●）からドラッグして相手ノードで離すとエッジ作成。
+
+エッジは既定で braille による Bezier 風曲線で描画される。環境で表示が崩れる場合は `--edges orthogonal` で角丸直角線に切り替えられる。
+
+## ノードの各項目
+
+- **id** — ノードを区別するための識別子（変更不可）
+- **type** — 作業の種類。ノードの色分けに使われる。例: `grep`（検索）、`read`（読解）、`edit`（編集）、`test`（テスト）
+- **title** — ノードの見出し（短い説明）
+- **data** — 作業の具体的な指示（キーと値の組）
+
+### type / data には何を書けばよいか
+
+書いた内容は、そのまま AI エージェント（Claude Code など）への指示になる。AgentTakt が中身を検査することはないため、**AI に伝わる言葉なら何でも構わない**（日本語の文章でも可）。
+
+例:
+
+- `grep` なら `pattern`（検索する語）と `files`（対象ファイル）
+- `edit` なら `file`（編集するファイル）と `strategy`（編集方針）
+- `test` なら `command`（実行するコマンド）
+
+## ドキュメント
+
+- [アーキテクチャ](docs/architecture.md) — 2 プロセス構成の理由と承認フロー
+- [Plan JSON スキーマ](docs/schema.md) — データモデルとバリデーション規則
+- [ブリッジプロトコル](docs/protocol.md) — MCP サーバー ⇔ TUI 間の socket プロトコル
+
+## 開発
+
+```sh
+uv sync                  # 依存関係のインストール（dev 含む）
+uv run pytest            # テスト
+uv run textual console   # 開発コンソール（別ターミナル）
+uv run textual run --dev src/agenttakt/tui/app.py
+```
+
+実装の進捗は [親 issue #3](https://github.com/ryoohshima/AgentTakt/issues/3) と `tasks/todo.md` を参照。
+
+## ステータス
+
+MVP 開発中。マイルストーン: M0 足場 → M1 静的描画 → M2 マウス編集 → M3 MCP 連携 → M4 磨き込み（braille 曲線ほか）。

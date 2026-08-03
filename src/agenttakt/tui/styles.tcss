@@ -1,0 +1,114 @@
+#editor-body {
+    height: 1fr;
+}
+
+GraphViewport {
+    layers: edges nodes;
+    width: 1fr;
+    background: $surface;
+    scrollbar-size: 1 1;
+}
+
+EdgeLayer {
+    layer: edges;
+}
+
+NodeWidget {
+    layer: nodes;
+    position: absolute;
+    background: $panel;
+    padding: 0 1;
+    border: round $primary;
+    border-title-align: left;
+    border-subtitle-align: right;
+}
+
+ParamPanel {
+    width: 34;
+    background: $surface;
+    border-left: solid $primary;
+    padding: 1;
+}
+
+ParamPanel .panel-heading {
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+ParamPanel #panel-node-id {
+    color: $text-muted;
+    margin-bottom: 1;
+}
+
+ParamPanel Input {
+    margin-bottom: 1;
+}
+
+ParamPanel #panel-data-fields {
+    height: auto;
+}
+
+ParamPanel .data-key {
+    color: $text-muted;
+}
+
+ParamPanel #panel-data-new-key {
+    margin-top: 1;
+}
+
+#idle-box {
+    width: auto;
+    height: auto;
+    padding: 1 4;
+    border: round $primary;
+    background: $panel;
+}
+
+#idle-logo {
+    color: $primary;
+    margin-bottom: 1;
+}
+
+#idle-status {
+    text-align: center;
+    margin-bottom: 1;
+}
+
+#idle-socket {
+    color: $text-muted;
+    text-align: center;
+}
+
+ConfirmApproveScreen, RejectReasonScreen, HelpScreen {
+    align: center middle;
+}
+
+HelpScreen .help-dialog {
+    width: 90%;
+    max-width: 110;
+    height: 85%;
+    border: round $primary;
+    background: $panel;
+    padding: 1 2;
+}
+
+.dialog {
+    width: 56;
+    height: auto;
+    border: round $primary;
+    background: $panel;
+    padding: 1 2;
+}
+
+.dialog-message {
+    margin-bottom: 1;
+}
+
+.dialog-buttons {
+    height: auto;
+    align-horizontal: right;
+}
+
+.dialog-buttons Button {
+    margin-left: 2;
+}
