@@ -26,18 +26,21 @@ Claude Code (Executor)
 
 ## インストール
 
+[uv](https://docs.astral.sh/uv/) があればインストール不要で、`uvx agenttakt` で直接実行できる。常用する場合は以下のいずれかでインストールする。
+
 ```sh
-git clone https://github.com/ryoohshima/AgentTakt.git
-cd AgentTakt
-uv sync
+uv tool install agenttakt     # uv の場合
+pipx install agenttakt        # pipx の場合
 ```
+
+ソースから開発する場合は clone して `uv sync`（[開発](#開発) 参照）。
 
 ## クイックスタート
 
 ### 1. TUI を起動する（人間側・別ターミナル）
 
 ```sh
-uv run agenttakt        # 短縮 alias: uv run at
+uvx agenttakt           # インストール済みなら: agenttakt（短縮 alias: at）
 ```
 
 待機画面が表示され、Executor からの計画到着を待つ。
@@ -50,8 +53,8 @@ uv run agenttakt        # 短縮 alias: uv run at
 {
   "mcpServers": {
     "agenttakt": {
-      "command": "uv",
-      "args": ["--directory", "/path/to/AgentTakt", "run", "agenttakt", "serve"],
+      "command": "uvx",
+      "args": ["agenttakt", "serve"],
       "timeout": 1800000
     }
   }
@@ -74,7 +77,7 @@ Executor が MCP ツール `request_approval(plan, summary)` を呼ぶと、TUI 
 ### デバッグモード（MCP なしで試す）
 
 ```sh
-uv run agenttakt open examples/sample_plan.json --out edited.json
+uvx agenttakt open examples/sample_plan.json --out edited.json
 ```
 
 ファイルから計画を読み込んでエディタを開き、承認結果を `--out` に書き出す。
@@ -124,6 +127,8 @@ uv run agenttakt open examples/sample_plan.json --out edited.json
 ## 開発
 
 ```sh
+git clone https://github.com/ryoohshima/AgentTakt.git
+cd AgentTakt
 uv sync                  # 依存関係のインストール（dev 含む）
 uv run pytest            # テスト
 uv run textual console   # 開発コンソール（別ターミナル）
