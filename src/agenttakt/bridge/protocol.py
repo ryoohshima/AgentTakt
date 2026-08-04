@@ -1,7 +1,7 @@
 """MCP サーバー ⇔ TUI 間のブリッジプロトコル。
 
 フレーミングは NDJSON（1 行 1 メッセージ）。メッセージは type を discriminator と
-する tagged union。詳細は docs/protocol.md を参照。
+する tagged union。詳細は docs/dev/protocol.md を参照。
 """
 
 from __future__ import annotations

@@ -30,7 +30,7 @@ AgentTakt — AI エージェント（Executor）が MCP 経由で送信した�
 │   └── tui/               # Textual アプリ（screens / widgets / geometry）
 ├── tests/                 # pytest（モデル・プロトコル・Pilot による TUI テスト）
 ├── examples/              # デバッグモード用サンプル計画 JSON
-├── docs/                  # 設計ドキュメント
+├── docs/                  # ユーザー向けドキュメント（dev/ 配下は開発者向け設計資料）
 └── tasks/                 # Claude Code 作業記録（todo.md / lessons.md）
 ```
 
@@ -63,6 +63,8 @@ uv run textual run --dev src/agenttakt/tui/app.py
 ## 参照ドキュメント
 
 - [README.md](./README.md)
-- [docs/architecture.md](./docs/architecture.md) — 2 プロセス構成・承認フロー
-- [docs/schema.md](./docs/schema.md) — Plan JSON スキーマ
-- [docs/protocol.md](./docs/protocol.md) — ブリッジプロトコル
+- [docs/schema.md](./docs/schema.md) — Plan JSON スキーマ（ユーザー向け）
+- [docs/dev/architecture.md](./docs/dev/architecture.md) — 2 プロセス構成・承認フロー
+- [docs/dev/protocol.md](./docs/dev/protocol.md) — ブリッジプロトコル
+
+なお `docs/` 配下のドキュメントはすべて英語で記述する（本ファイルと `tasks/` は日本語のまま）。
