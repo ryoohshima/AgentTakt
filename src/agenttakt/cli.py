@@ -8,7 +8,7 @@ from agenttakt import __version__
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="agenttakt",
-        description="AI エージェントの実行計画をターミナルでレビュー・編集・承認する MCP-TUI ツール",
+        description="Review, edit, and approve AI agent task plans in your terminal (MCP + TUI)",
     )
     parser.add_argument(
         "--version", action="version", version=f"agenttakt {__version__}"
@@ -17,22 +17,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--edges",
         choices=["braille", "orthogonal"],
         default="braille",
-        help="エッジ描画方式（既定: braille 曲線）",
+        help="edge rendering style (default: braille curves)",
     )
     subparsers = parser.add_subparsers(dest="command")
     open_parser = subparsers.add_parser(
-        "open", help="計画 JSON をエディタで開く（MCP なしのデバッグモード）"
+        "open", help="open a plan JSON in the editor (debug mode, no MCP)"
     )
-    open_parser.add_argument("plan_file", help="計画 JSON ファイルのパス")
-    open_parser.add_argument("--out", help="承認/却下後の計画 JSON の出力先")
+    open_parser.add_argument("plan_file", help="path to the plan JSON file")
+    open_parser.add_argument("--out", help="where to write the plan JSON after approval/rejection")
     open_parser.add_argument(
         "--edges",
         choices=["braille", "orthogonal"],
         default="braille",
-        help="エッジ描画方式（既定: braille 曲線）",
+        help="edge rendering style (default: braille curves)",
     )
     subparsers.add_parser(
-        "serve", help="MCP stdio サーバーを起動する（Executor が spawn する用）"
+        "serve", help="run the MCP stdio server (spawned by the Executor)"
     )
     return parser
 

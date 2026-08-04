@@ -9,14 +9,14 @@ from textual.widgets import Button, Input, Static
 class ConfirmApproveScreen(ModalScreen[bool]):
     """承認前の確認ダイアログ。"""
 
-    BINDINGS = [("escape", "dismiss(False)", "キャンセル")]
+    BINDINGS = [("escape", "dismiss(False)", "Cancel")]
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="dialog"):
-            yield Static("このプランを承認しますか？", classes="dialog-message")
+            yield Static("Approve this plan?", classes="dialog-message")
             with Horizontal(classes="dialog-buttons"):
-                yield Button("プラン承認", variant="success", id="ok")
-                yield Button("キャンセル", id="cancel")
+                yield Button("Approve", variant="success", id="ok")
+                yield Button("Cancel", id="cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         self.dismiss(event.button.id == "ok")
@@ -25,15 +25,15 @@ class ConfirmApproveScreen(ModalScreen[bool]):
 class RejectReasonScreen(ModalScreen[str | None]):
     """却下理由の入力ダイアログ。キャンセル時は None を返す。"""
 
-    BINDINGS = [("escape", "dismiss(None)", "キャンセル")]
+    BINDINGS = [("escape", "dismiss(None)", "Cancel")]
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="dialog"):
-            yield Static("プラン却下の理由（Executor に返されます）", classes="dialog-message")
-            yield Input(placeholder="理由を入力", id="reject-reason")
+            yield Static("Reason for rejection (returned to the Executor)", classes="dialog-message")
+            yield Input(placeholder="Enter a reason", id="reject-reason")
             with Horizontal(classes="dialog-buttons"):
-                yield Button("プラン却下", variant="error", id="ok")
-                yield Button("キャンセル", id="cancel")
+                yield Button("Reject", variant="error", id="ok")
+                yield Button("Cancel", id="cancel")
 
     def on_mount(self) -> None:
         self.query_one(Input).focus()

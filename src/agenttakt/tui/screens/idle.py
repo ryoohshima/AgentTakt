@@ -14,8 +14,8 @@ class IdleScreen(Screen):
     """計画の到着を待つ常駐画面。"""
 
     BINDINGS = [
-        ("question_mark", "show_help", "ヘルプ"),
-        ("q", "app.quit", "終了"),
+        ("question_mark", "show_help", "Help"),
+        ("q", "app.quit", "Quit"),
     ]
 
     def action_show_help(self) -> None:
@@ -43,6 +43,6 @@ class IdleScreen(Screen):
     def update_status(self, queue_size: int) -> None:
         status = self.query_one("#idle-status", Static)
         if queue_size:
-            status.update(f"レビュー待ち: {queue_size} 件")
+            status.update(f"{queue_size} plan(s) waiting for review")
         else:
-            status.update("Executor からの計画を待機中…")
+            status.update("Waiting for a plan from the Executor…")

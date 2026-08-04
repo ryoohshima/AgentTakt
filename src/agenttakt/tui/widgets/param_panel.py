@@ -24,15 +24,15 @@ class ParamPanel(VerticalScroll):
         self._json_keys: set[str] = set()  # 文字列以外（JSON 断片編集）のキー
 
     def compose(self) -> ComposeResult:
-        yield Static("パラメータ", classes="panel-heading")
-        yield Static("ノード未選択", id="panel-node-id")
+        yield Static("Parameters", classes="panel-heading")
+        yield Static("No node selected", id="panel-node-id")
         yield Label("title")
         yield Input(id="panel-title")
         yield Label("type")
         yield Input(id="panel-type")
         yield Label("data")
         yield Vertical(id="panel-data-fields")
-        yield Input(id="panel-data-new-key", placeholder="+ 新しいキー名 (Enter)")
+        yield Input(id="panel-data-new-key", placeholder="+ new key (Enter)")
 
     def show_node(self, node: Node) -> None:
         self._loading = True
@@ -46,7 +46,7 @@ class ParamPanel(VerticalScroll):
     def show_none(self) -> None:
         self._loading = True
         self._node = None
-        self.query_one("#panel-node-id", Static).update("ノード未選択")
+        self.query_one("#panel-node-id", Static).update("No node selected")
         self.query_one("#panel-title", Input).value = ""
         self.query_one("#panel-type", Input).value = ""
         self.query_one("#panel-data-fields", Vertical).remove_children()
@@ -121,4 +121,4 @@ class ParamPanel(VerticalScroll):
             try:
                 json.loads(widget.value)
             except json.JSONDecodeError as error:
-                self.app.notify(f"'{widget.name}' の JSON が不正: {error}", severity="error")
+                self.app.notify(f"Invalid JSON in '{widget.name}': {error}", severity="error")

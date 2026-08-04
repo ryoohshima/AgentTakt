@@ -36,20 +36,20 @@ class GraphViewport(ScrollableContainer):
 
 class EditorScreen(Screen[ReviewResult]):
     BINDINGS = [
-        Binding("a", "approve", "プラン承認"),
-        Binding("r", "reject", "プラン却下"),
-        Binding("n", "add_node", "ノード追加"),
-        Binding("d,delete", "delete_selected", "削除"),
-        Binding("p", "toggle_panel", "パネル"),
+        Binding("a", "approve", "Approve"),
+        Binding("r", "reject", "Reject"),
+        Binding("n", "add_node", "Add node"),
+        Binding("d,delete", "delete_selected", "Delete"),
+        Binding("p", "toggle_panel", "Panel"),
         Binding("u", "undo", "Undo"),
         Binding("U", "redo", "Redo", show=False),
-        Binding("up", "nudge('up')", "移動", show=False),
-        Binding("down", "nudge('down')", "移動", show=False),
-        Binding("left", "nudge('left')", "移動", show=False),
-        Binding("right", "nudge('right')", "移動", show=False),
-        Binding("question_mark", "show_help", "ヘルプ", key_display="?"),
-        Binding("escape", "deselect", "選択解除", show=False),
-        Binding("q", "quit_editor", "終了"),
+        Binding("up", "nudge('up')", "Move", show=False),
+        Binding("down", "nudge('down')", "Move", show=False),
+        Binding("left", "nudge('left')", "Move", show=False),
+        Binding("right", "nudge('right')", "Move", show=False),
+        Binding("question_mark", "show_help", "Help", key_display="?"),
+        Binding("escape", "deselect", "Deselect", show=False),
+        Binding("q", "quit_editor", "Quit"),
     ]
 
     def __init__(self, plan: Plan, summary: str | None = None) -> None:
@@ -191,13 +191,13 @@ class EditorScreen(Screen[ReviewResult]):
 
     def create_edge(self, source: str, target: str) -> None:
         if any(e.source == source and e.target == target for e in self.plan.edges):
-            self.notify("同じ接続が既に存在します", severity="warning")
+            self.notify("That connection already exists", severity="warning")
             return
         node_ids = [n.id for n in self.plan.nodes]
         proposed = [(e.source, e.target) for e in self.plan.edges] + [(source, target)]
         cycle = find_cycle(node_ids, proposed)
         if cycle:
-            self.notify("循環になるため接続できません: " + " -> ".join(cycle), severity="error")
+            self.notify("Cannot connect: this would create a cycle: " + " -> ".join(cycle), severity="error")
             return
         self.checkpoint()
         self.plan.edges.append(
@@ -233,7 +233,7 @@ class EditorScreen(Screen[ReviewResult]):
 
     async def action_undo(self) -> None:
         if not self._undo_stack:
-            self.notify("これ以上戻れません", severity="warning")
+            self.notify("Nothing left to undo", severity="warning")
             return
         self._redo_stack.append(self.snapshot_plan())
         self._last_edit_key = None
@@ -241,7 +241,7 @@ class EditorScreen(Screen[ReviewResult]):
 
     async def action_redo(self) -> None:
         if not self._redo_stack:
-            self.notify("やり直す操作がありません", severity="warning")
+            self.notify("Nothing to redo", severity="warning")
             return
         self._undo_stack.append(self.snapshot_plan())
         self._last_edit_key = None
