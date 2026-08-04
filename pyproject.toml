@@ -4,11 +4,33 @@ version = "0.1.0"
 description = "MCP-TUI Agent Plan Approver — AI エージェントの実行計画をターミナルのノードエディタでレビュー・編集・承認する"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ryo Ohshima", email = "ryo.ohshima.official@gmail.com" }]
+keywords = ["mcp", "tui", "textual", "agent", "plan", "approval", "node-editor"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development",
+    "Topic :: Terminals",
+]
 dependencies = [
     "textual>=8.2",
     "mcp>=1.9,<2",
     "pydantic>=2.7",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ryoohshima/AgentTakt"
+Repository = "https://github.com/ryoohshima/AgentTakt"
+Issues = "https://github.com/ryoohshima/AgentTakt/issues"
 
 [project.scripts]
 agenttakt = "agenttakt.cli:main"
@@ -23,7 +45,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
