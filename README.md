@@ -3,7 +3,6 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/agenttakt)](https://pypi.org/project/agenttakt/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/agenttakt)](https://pypi.org/project/agenttakt/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Release](https://github.com/ryoohshima/AgentTakt/actions/workflows/release.yml/badge.svg)](https://github.com/ryoohshima/AgentTakt/actions/workflows/release.yml)
 
 Review, edit, and approve AI agent task plans in a ComfyUI-style visual node editor — right in your terminal.
 
@@ -37,8 +36,6 @@ With [uv](https://docs.astral.sh/uv/) you can run AgentTakt directly via `uvx ag
 uv tool install agenttakt     # uv
 pipx install agenttakt        # pipx
 ```
-
-To develop from source, clone the repository and run `uv sync` (see [Development](#development)).
 
 ## Quick Start
 
@@ -109,25 +106,6 @@ Edges are drawn as braille Bezier-like curves by default. If they render poorly 
 ## Documentation
 
 - [Plan JSON schema](docs/schema.md) — data model, node fields, what to write in `type` / `data`, and validation rules
-
-Internals (for contributors): [architecture](docs/dev/architecture.md) · [bridge protocol](docs/dev/protocol.md)
-
-## Development
-
-```sh
-git clone https://github.com/ryoohshima/AgentTakt.git
-cd AgentTakt
-uv sync                  # install dependencies (including dev)
-uv run pytest            # run tests
-uv run textual console   # dev console (separate terminal)
-uv run textual run --dev src/agenttakt/tui/app.py
-```
-
-Progress is tracked in [issue #3](https://github.com/ryoohshima/AgentTakt/issues/3).
-
-## Status
-
-MVP under development. Milestones: M0 scaffolding → M1 static rendering → M2 mouse editing → M3 MCP integration → M4 polish (braille curves, etc.).
 
 ## License
 
