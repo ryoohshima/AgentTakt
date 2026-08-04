@@ -1,8 +1,8 @@
-# Plan JSON スキーマ
+# Plan JSON Schema
 
-Executor（AI エージェント）と AgentTakt の間で受け渡す計画（Plan）の共通データモデル。
+The shared data model for plans exchanged between the Executor (AI agent) and AgentTakt.
 
-## 構造
+## Structure
 
 ```json
 {
@@ -26,58 +26,58 @@ Executor（AI エージェント）と AgentTakt の間で受け渡す計画（P
 }
 ```
 
-## フィールド定義
+## Field Reference
 
-### Plan（ルート）
+### Plan (root)
 
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `graph_id` | string | ✔ | 計画の一意 ID（Executor が採番） |
-| `status` | `"pending_approval"` \| `"approved"` \| `"rejected"` | — | 既定 `"pending_approval"`。承認/却下時に AgentTakt が書き換えて返す |
-| `nodes` | Node[] | ✔ | タスクステップの一覧 |
-| `edges` | Edge[] | ✔ | 依存関係（`source` の完了後に `target` を実行） |
+| `graph_id` | string | ✔ | Unique plan ID (assigned by the Executor) |
+| `status` | `"pending_approval"` \| `"approved"` \| `"rejected"` | — | Defaults to `"pending_approval"`. AgentTakt rewrites it on approval/rejection before returning the plan |
+| `nodes` | Node[] | ✔ | List of task steps |
+| `edges` | Edge[] | ✔ | Dependencies (`target` runs after `source` completes) |
 
 ### Node
 
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | string | ✔ | ノードの一意 ID |
-| `type` | string | ✔ | ステップ種別（例: `grep`, `edit`, `test`）。TUI の色分けに使用 |
-| `title` | string | ✔ | 人間向けの短い表題 |
-| `data` | object | — | 種別ごとの任意パラメータ。TUI で編集可能 |
-| `position` | `{x: int, y: int}` | — | TUI 上の表示座標（端末セル単位）。欠落時は自動レイアウトで補完 |
+| `id` | string | ✔ | Unique node ID (not editable in the TUI) |
+| `type` | string | ✔ | Kind of work (e.g. `grep`, `edit`, `test`). Used for node coloring in the TUI |
+| `title` | string | ✔ | Short human-readable heading |
+| `data` | object | — | Per-type parameters as key-value pairs — the concrete instructions for the step. Editable in the TUI |
+| `position` | `{x: int, y: int}` | — | Display coordinates in the TUI (terminal cells). Filled in by auto layout when missing |
 
 ### Edge
 
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | string | ✔ | エッジの一意 ID |
-| `source` | string | ✔ | 依存元ノード ID |
-| `target` | string | ✔ | 依存先ノード ID |
+| `id` | string | ✔ | Unique edge ID |
+| `source` | string | ✔ | ID of the node this edge depends on |
+| `target` | string | ✔ | ID of the dependent node |
 
-## type と data には何を書けばよいか
+## What to write in `type` and `data`
 
-`type` と `data` は **Executor（AI エージェント）が解釈する自由な語彙**であり、AgentTakt は中身を検証しない。プラン承認後、編集済み JSON はそのまま Executor に返り、Executor がそれを解釈して実行する。つまり「Executor に伝わる言葉」で書けばよい（自然言語の指示でも構わない）。
+`type` and `data` are a **free vocabulary interpreted by the Executor (AI agent)** — AgentTakt does not inspect their contents. After approval, the edited JSON is returned to the Executor as-is, which interprets and executes it. In other words, anything the Executor understands is valid, including natural-language instructions.
 
-- `type`: ステップの種別。TUI ではノードの色分けと下辺ラベルに使われる。慣例: `grep`（検索）/ `read`（読解）/ `edit`（編集）/ `test`（テスト）/ `command`（コマンド実行）/ `docs`（文書更新）
-- `data`: そのステップのパラメータ。type ごとの慣例:
-  - `grep` → `pattern`（検索パターン）, `files`（対象グロブのリスト）
-  - `edit` → `file`（対象ファイル）, `strategy`（編集方針）
-  - `test` → `command`（実行コマンド）
+- `type`: the kind of step. The TUI uses it for node coloring and the bottom-edge label. Conventions: `grep` (search) / `read` (reading) / `edit` (editing) / `test` (testing) / `command` (command execution) / `docs` (documentation)
+- `data`: parameters for the step. Conventions per type:
+  - `grep` → `pattern` (search pattern), `files` (list of target globs)
+  - `edit` → `file` (target file), `strategy` (editing approach)
+  - `test` → `command` (command to run)
 
-同じ内容は TUI 内で `?` キーを押すと表示されるヘルプにも記載している。
+The same information is available in the in-TUI help (press `?`).
 
-## バリデーション規則
+## Validation Rules
 
-`request_approval` の入口（および TUI での編集確定時）に以下を検証する。違反は `ValueError` として Executor に返す。
+The following are validated at the `request_approval` entry point (and when confirming edits in the TUI). Violations are returned to the Executor as a `ValueError`.
 
-1. **ID の一意性**: node id / edge id の重複禁止
-2. **端点の存在**: edge の `source` / `target` が `nodes` に存在すること
-3. **DAG 保証**: サイクル禁止（Kahn 法で検出）
+1. **ID uniqueness**: no duplicate node ids / edge ids
+2. **Endpoint existence**: every edge's `source` / `target` must exist in `nodes`
+3. **DAG guarantee**: no cycles (detected with Kahn's algorithm)
 
-### エラーメッセージの方針
+### Error message policy
 
-エージェントが自己修正できるよう、エラーには対象 ID を必ず含める。
+Errors always include the offending IDs so the agent can self-correct.
 
 ```
 duplicate node ids: ['node_1']
@@ -85,14 +85,14 @@ edge 'edge_3' references unknown node(s): ['node_9']
 plan must be a DAG; cycle detected: node_1 -> node_2 -> node_1
 ```
 
-## 未知フィールドの扱い
+## Unknown Fields
 
-Plan / Node / Edge は未知フィールドを許容し（`extra="allow"`）、編集後もそのまま保持して返す（ラウンドトリップ保証）。Executor 独自のメタデータを壊さないためである。
+Plan / Node / Edge accept unknown fields (`extra="allow"`) and preserve them through editing (round-trip guarantee), so Executor-specific metadata is never lost.
 
-## 自動レイアウト
+## Auto Layout
 
-`position` 欠落ノードには layered レイアウトで座標を補完する。
+Nodes without a `position` get coordinates from a layered layout.
 
-- 層割当: longest-path（依存の深さ）で `x = layer * 36`
-- 層内: 出現順に `y = index * 8`
-- `position` を持つノードは動かさない
+- Layer assignment: longest path (dependency depth), `x = layer * 36`
+- Within a layer: in order of appearance, `y = index * 8`
+- Nodes that already have a `position` are left untouched
