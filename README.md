@@ -35,8 +35,9 @@ Claude Code (Executor)
 With [uv](https://docs.astral.sh/uv/) you can run AgentTakt directly via `uvx agenttakt` — no installation needed. For regular use, install with either:
 
 ```sh
-uv tool install agenttakt     # uv
-pipx install agenttakt        # pipx
+uv tool install agenttakt                # uv
+pipx install agenttakt                   # pipx
+brew install ryoohshima/tap/agenttakt    # Homebrew
 ```
 
 ## Quick Start

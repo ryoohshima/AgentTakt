@@ -39,3 +39,12 @@
 - **ミス/原因**: タグ push は「publish を発火させる不可逆な外部公開アクション」なのに、曖昧な進捗報告からの推測で実行した。事前調査で PyPI 404・タグ無し・run 履歴無しという「未公開」の事実を掴んでいたのに、それをユーザーの表現のズレと解釈して押し切った。事実と発言が食い違うときこそ確認すべき局面だった。
 - **再発防止ルール**: リリース発火（タグ push・publish・デプロイ等の外部公開）は、ユーザーの明示的な発火指示（「リリースして」「タグを打て」）がある場合のみ実行する。進捗報告や状況説明の文言から発火指示を推測しない。観測した事実とユーザーの発言が矛盾する場合は、解釈で埋めず、その一点だけを AskUserQuestion で確認する。
 - **付随知識**: PyPI はバージョン番号を再利用できない。公開事故のリカバリは「該当版を yank し、次バージョンを出し直す」しかない。
+
+## パッケージ配布（#10 で得た知見）
+
+- **CLI の短縮エイリアスは system コマンドとの衝突を確認してから決める**: `at` は POSIX のジョブスケジューラと衝突し、グローバルインストール時に PATH 順で負ける。Homebrew 配布では逆に system 側を覆い隠す。`command -v <name>` と `brew search --formula "^<name>$"` の両方で確認すること（`takt` `atk` も homebrew-core に既存）。
+- **バージョンは 1 箇所で定義する**: `pyproject.toml` と `__init__.py` の二重定義は bump 時に必ず不整合を生む。hatchling なら `dynamic = ["version"]` + `[tool.hatch.version] path = ...` で `__init__.py` を単一ソースにする。
+- **`brew update-python-resources` は公開当日のパッケージで失敗する**: 内部で pip に `--uploaded-prior-to=P1D` を渡すため。自前で直接依存だけを pip 解決し、PyPI JSON API から sdist の URL / sha256 を引けば回避できる。
+- **formula の resource 名は PyPI 正規名（ハイフン区切り）**: pip のメタデータは `pydantic_core` のようにアンダースコアで返すが、`brew audit` が弾く。
+- **`cryptography` を resource でビルドするなら `openssl@3` が要る**: `openssl-sys` は pkg-config だけでは brew の OpenSSL を見つけられず、`ENV["OPENSSL_DIR"] = formula_opt_prefix("openssl@3")` の明示が必要（`Formula[...].opt_prefix` は `brew style` に弾かれる）。なお `cryptography` は `mcp` → `pyjwt[crypto]` 経由の必須依存で外せない。
+- **ローカルで `brew install` を試せなくても tap の `brew test-bot` が代替になる**: `brew tap-new` が生成する tests.yml が macOS / Ubuntu で実ビルドと test ブロック実行まで行う。
