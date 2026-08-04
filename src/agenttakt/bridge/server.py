@@ -73,7 +73,7 @@ class BridgeServer:
         with contextlib.suppress(Exception):
             await writer.wait_closed()
         raise AlreadyRunningError(
-            f"別の AgentTakt が {self._socket_path} で稼働中です"
+            f"Another AgentTakt is already running on {self._socket_path}"
         )
 
     async def stop(self) -> None:

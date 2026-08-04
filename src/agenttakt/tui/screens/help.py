@@ -6,35 +6,35 @@ from textual.screen import ModalScreen
 from textual.widgets import Markdown
 
 HELP_TEXT = """\
-# AgentTakt ヘルプ
+# AgentTakt Help
 
-## マウス操作
+## Mouse
 
-- ノードをドラッグ — 移動
-- ノード右端の ● から相手ノードへドラッグ — 依存関係の線を引く
-- クリック — ノード / 線を選択
+- Drag a node — move it
+- Drag from a node's output port (●, right edge) onto another node — draw a dependency edge
+- Click — select a node or edge
 
-## キー操作
+## Keys
 
-| キー | 動作 |
+| Key | Action |
 |---|---|
-| `a` | プラン承認 |
-| `r` | プラン却下 |
-| `n` | ノード追加 |
-| `d` / `Delete` | 選択中を削除 |
-| `u` / `U` | 元に戻す / やり直す |
-| 矢印 | 選択ノードを 1 マス移動 |
-| `Escape` | 選択解除 |
-| `p` | 右パネルの表示切替 |
-| `?` | このヘルプ |
-| `q` | 終了 |
+| `a` | Approve the plan |
+| `r` | Reject the plan |
+| `n` | Add a node |
+| `d` / `Delete` | Delete the selection |
+| `u` / `U` | Undo / Redo |
+| Arrow keys | Move the selected node by one cell |
+| `Escape` | Clear selection |
+| `p` | Toggle the parameter panel |
+| `?` | This help |
+| `q` | Quit |
 """
 
 
 class HelpScreen(ModalScreen[None]):
     """`?` で開く操作説明のモーダル。"""
 
-    BINDINGS = [("escape,q,question_mark", "dismiss", "閉じる")]
+    BINDINGS = [("escape,q,question_mark", "dismiss", "Close")]
 
     def compose(self) -> ComposeResult:
         with VerticalScroll(classes="help-dialog"):

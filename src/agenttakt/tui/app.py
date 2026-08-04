@@ -105,7 +105,7 @@ class AgentTaktApp(App):
             self._update_idle_status()
             return
         if pending is self._active:
-            self.notify("リクエスト元が切断しました", severity="warning")
+            self.notify("The requester disconnected", severity="warning")
             # コールバックに None が渡り、応答はスキップされる
             self.screen.dismiss(None)
 
@@ -150,7 +150,7 @@ def run_open(plan_path: str, out_path: str | None = None, edge_style: str = "bra
         detail = f"（{result.reason}）" if result.reason else ""
         print(f"{result.decision}: {result.plan.graph_id} {detail}".rstrip())
         if out_path:
-            print(f"編集後の計画を {out_path} に書き出しました")
+            print(f"Wrote the edited plan to {out_path}")
     return 0
 
 
