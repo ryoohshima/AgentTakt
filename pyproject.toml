@@ -34,7 +34,7 @@ Issues = "https://github.com/ryoohshima/AgentTakt/issues"
 
 [project.scripts]
 agenttakt = "agenttakt.cli:main"
-at = "agenttakt.cli:main"
+agt = "agenttakt.cli:main"
 
 [dependency-groups]
 dev = [

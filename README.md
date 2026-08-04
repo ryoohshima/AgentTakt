@@ -44,7 +44,7 @@ pipx install agenttakt        # pipx
 ### 1. Start the TUI (human side, separate terminal)
 
 ```sh
-uvx agenttakt           # if installed: agenttakt (short alias: at)
+uvx agenttakt           # if installed: agenttakt (short alias: agt)
 ```
 
 An idle screen appears, waiting for plans from the Executor.
