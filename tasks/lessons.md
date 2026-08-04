@@ -22,6 +22,12 @@
 - **再発防止ルール**: 部分的な装飾（仮線・ハイライト等）を前面レイヤーの全面ウィジェットで描くな。既存の背面レイヤーのセルバッファに合成するか、装飾の bounding box に限定したウィジェットにせよ。また TUI の描画変更は「操作の途中状態」（ドラッグ最中など）を export_screenshot で目視確認してから完了とせよ（静止状態のテストだけでは覆い隠しバグは検出できない）。
 - **関連ファイル**: src/agenttakt/tui/widgets/edge_layer.py（set_preview / cells_for_row）
 
+## スクリーンショット（SVG エクスポート）
+
+- **Textual の `export_screenshot()` は全角文字を 1 セル幅で数える**。`<text textLength=...>` が実幅の半分になり、日本語ラベルが潰れて判読不能になる（README のスクショで発覚）。UI 文字列は英語に統一して回避したため補正コードは持たない。UI に全角文字を足すと SVG が再び壊れる — その際は East Asian Width で `textLength` を計算し直すこと（削除ではなく再計算。削除すると閲覧環境のフォント幅次第でグリッドがずれる）。
+- **UI 文字列は英語**（README / docs / PyPI が英語のため）。コメントと docstring は日本語のままでよい。
+- **SVG は必ずラスタライズして目視確認する**。テキスト抽出だけでは字詰まり・見切れを検出できない。`Google Chrome --headless --screenshot` で PNG 化して確認する（既存プロファイルが動いていると起動に失敗するので `--user-data-dir` は別を指定）。
+
 ## テスト運用
 
 - **rtk フィルタ経由の pytest 出力は要約される**（"No tests collected" 等が実態と異なることがある）。切り分け時は `rtk proxy uv run python -m pytest -v` で素の出力を見る。
