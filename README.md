@@ -1,53 +1,58 @@
 # AgentTakt
 
-AI エージェント（Executor）が生成したタスク実行計画（Plan）を、人間がターミナル上で視覚的にレビュー・編集・承認するための MCP（Model Context Protocol）サーバー兼 TUI ツール。
+[![PyPI - Version](https://img.shields.io/pypi/v/agenttakt)](https://pypi.org/project/agenttakt/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/agenttakt)](https://pypi.org/project/agenttakt/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Release](https://github.com/ryoohshima/AgentTakt/actions/workflows/release.yml/badge.svg)](https://github.com/ryoohshima/AgentTakt/actions/workflows/release.yml)
 
-Claude Code 等の Executor が MCP 経由で送ってきた計画 JSON を、ComfyUI 風のビジュアルノードエディタとしてターミナルに描画する。人間はマウスとキーボードでノードの移動・追加・削除、依存関係（エッジ）の線引き、パラメータ編集を行い、「Approve」すると編集後の JSON が Executor に返って実行が始まる。
+Review, edit, and approve AI agent task plans in a ComfyUI-style visual node editor — right in your terminal.
+
+AgentTakt is an MCP (Model Context Protocol) server and TUI tool. When an AI agent (an "Executor" such as Claude Code) sends a task execution plan over MCP, AgentTakt renders it as a node graph in your terminal. You review it with mouse and keyboard — move, add, and delete nodes, draw dependency edges, edit parameters — then approve, and the edited plan JSON is returned to the Executor for execution.
 
 ```
 Claude Code (Executor)
-   │ stdio (MCP)                          人間の別ターミナル
-   ▼                                            │
-[agenttakt serve] ── Unix domain socket ──▶ [agenttakt (TUI 常駐)]
- MCP サーバー                                レビュー / 編集 / 承認
+   │ stdio (MCP)                        your other terminal
+   ▼                                           │
+[agenttakt serve] ── Unix domain socket ──▶ [agenttakt (TUI)]
+ MCP server                               review / edit / approve
 ```
 
-## 特徴
+## Features
 
-- **ターミナル完結**: Web UI を使わず、ターミナル環境のみで動作する
-- **ビジュアルノードエディタ**: Textual による角丸ノード・依存関係の接続線・type 別色分け
-- **マウス中心の直感操作**: ノードドラッグ、ポート間の線引き（ラバーバンド）、クリック選択・削除
-- **安全な承認ループ**: サイクル検出（DAG 保証）等のバリデーションを入口で行い、エージェントが自己修正できるエラーを返す
+- **Terminal-native** — no web UI; everything runs inside your terminal
+- **Visual node editor** — rounded nodes, dependency edges, and per-type coloring, powered by [Textual](https://textual.textualize.io/)
+- **Mouse-first editing** — drag nodes to move them, draw edges between ports (rubber band), click to select and delete
+- **Safe approval loop** — cycle detection (DAG guarantee) and other validations at the entry point, returning errors the agent can self-correct
 
-## 必要環境
+## Requirements
 
-- Python 3.10+（推奨: [uv](https://docs.astral.sh/uv/)）
-- マウスレポート対応のターミナルエミュレータ（iTerm2, WezTerm, kitty, Ghostty 等）
+- Python 3.10+ (recommended: [uv](https://docs.astral.sh/uv/))
+- A terminal emulator with mouse reporting (iTerm2, WezTerm, kitty, Ghostty, ...)
 
-## インストール
+## Installation
 
-[uv](https://docs.astral.sh/uv/) があればインストール不要で、`uvx agenttakt` で直接実行できる。常用する場合は以下のいずれかでインストールする。
+With [uv](https://docs.astral.sh/uv/) you can run AgentTakt directly via `uvx agenttakt` — no installation needed. For regular use, install with either:
 
 ```sh
-uv tool install agenttakt     # uv の場合
-pipx install agenttakt        # pipx の場合
+uv tool install agenttakt     # uv
+pipx install agenttakt        # pipx
 ```
 
-ソースから開発する場合は clone して `uv sync`（[開発](#開発) 参照）。
+To develop from source, clone the repository and run `uv sync` (see [Development](#development)).
 
-## クイックスタート
+## Quick Start
 
-### 1. TUI を起動する（人間側・別ターミナル）
+### 1. Start the TUI (human side, separate terminal)
 
 ```sh
-uvx agenttakt           # インストール済みなら: agenttakt（短縮 alias: at）
+uvx agenttakt           # if installed: agenttakt (short alias: at)
 ```
 
-待機画面が表示され、Executor からの計画到着を待つ。
+An idle screen appears, waiting for plans from the Executor.
 
-### 2. Executor（Claude Code）に MCP サーバーを登録する
+### 2. Register the MCP server with the Executor (Claude Code)
 
-プロジェクトの `.mcp.json` に以下を追加する。
+Add the following to your project's `.mcp.json`:
 
 ```json
 {
@@ -62,81 +67,68 @@ uvx agenttakt           # インストール済みなら: agenttakt（短縮 ali
 ```
 
 > [!IMPORTANT]
-> **`timeout`（ミリ秒）の明示設定は必須。** `request_approval` ツールは人間がレビューを終えるまでブロックする。MCP の progress notification ではクライアント側タイムアウトは延長されないため、既定のままだと承認前に打ち切られる。上記例は 30 分（`1800000`）。
+> **Setting `timeout` (milliseconds) explicitly is required.** The `request_approval` tool blocks until the human finishes reviewing. MCP progress notifications do not extend client-side timeouts, so the default would cut the request off before approval. The example above sets 30 minutes (`1800000`).
 
-### 3. Executor から承認を依頼する
+### 3. Request approval from the Executor
 
-Executor が MCP ツール `request_approval(plan, summary)` を呼ぶと、TUI に計画がノードグラフとして表示される。人間が編集して承認/却下すると、結果が以下の形で返る。
+When the Executor calls the MCP tool `request_approval(plan, summary)`, the plan appears in the TUI as a node graph. Once the human edits and approves (or rejects) it, the result is returned as:
 
 ```json
-{ "status": "approved", "plan": { "...編集後の計画..." }, "reason": null }
+{ "status": "approved", "plan": { "...edited plan..." }, "reason": null }
 ```
 
-計画 JSON の形式は [docs/schema.md](docs/schema.md) を参照。
+See [docs/schema.md](docs/schema.md) for the plan JSON format and what to write in each node.
 
-### デバッグモード（MCP なしで試す）
+### Debug mode (try it without MCP)
 
 ```sh
 uvx agenttakt open examples/sample_plan.json --out edited.json
 ```
 
-ファイルから計画を読み込んでエディタを開き、承認結果を `--out` に書き出す。
+Loads a plan from a file, opens the editor, and writes the approval result to `--out`.
 
-## キー操作
+## Key Bindings
 
-| キー | 動作 |
+| Key | Action |
 |---|---|
-| `a` | プラン承認（確認ダイアログ） |
-| `r` | プラン却下（理由入力） |
-| `n` | ノード追加 |
-| `d` / `Delete` | 選択中のノード/エッジを削除 |
+| `a` | Approve the plan (confirmation dialog) |
+| `r` | Reject the plan (with a reason) |
+| `n` | Add a node |
+| `d` / `Delete` | Delete the selected node/edge |
 | `u` / `U` | Undo / Redo |
-| 矢印 | 選択ノードを 1 セル移動（マウスの微調整） |
-| `Escape` | 選択解除 |
-| `p` | パラメータパネルの表示切替 |
-| `?` | ヘルプ（操作一覧と type / data の書き方） |
-| `q` | 終了 |
+| Arrow keys | Move the selected node by one cell (fine-tuning) |
+| `Escape` | Clear selection |
+| `p` | Toggle the parameter panel |
+| `?` | Help (controls and how to write `type` / `data`) |
+| `q` | Quit |
 
-マウス: ノードをドラッグで移動、ノード右辺（出力ポート ●）からドラッグして相手ノードで離すとエッジ作成。
+Mouse: drag a node to move it; drag from a node's output port (●, right edge) and release on another node to create an edge.
 
-エッジは既定で braille による Bezier 風曲線で描画される。環境で表示が崩れる場合は `--edges orthogonal` で角丸直角線に切り替えられる。
+Edges are drawn as braille Bezier-like curves by default. If they render poorly in your environment, switch to rounded orthogonal lines with `--edges orthogonal`.
 
-## ノードの各項目
+## Documentation
 
-- **id** — ノードを区別するための識別子（変更不可）
-- **type** — 作業の種類。ノードの色分けに使われる。例: `grep`（検索）、`read`（読解）、`edit`（編集）、`test`（テスト）
-- **title** — ノードの見出し（短い説明）
-- **data** — 作業の具体的な指示（キーと値の組）
+- [Plan JSON schema](docs/schema.md) — data model, node fields, what to write in `type` / `data`, and validation rules
 
-### type / data には何を書けばよいか
+Internals (for contributors): [architecture](docs/dev/architecture.md) · [bridge protocol](docs/dev/protocol.md)
 
-書いた内容は、そのまま AI エージェント（Claude Code など）への指示になる。AgentTakt が中身を検査することはないため、**AI に伝わる言葉なら何でも構わない**（日本語の文章でも可）。
-
-例:
-
-- `grep` なら `pattern`（検索する語）と `files`（対象ファイル）
-- `edit` なら `file`（編集するファイル）と `strategy`（編集方針）
-- `test` なら `command`（実行するコマンド）
-
-## ドキュメント
-
-- [アーキテクチャ](docs/architecture.md) — 2 プロセス構成の理由と承認フロー
-- [Plan JSON スキーマ](docs/schema.md) — データモデルとバリデーション規則
-- [ブリッジプロトコル](docs/protocol.md) — MCP サーバー ⇔ TUI 間の socket プロトコル
-
-## 開発
+## Development
 
 ```sh
 git clone https://github.com/ryoohshima/AgentTakt.git
 cd AgentTakt
-uv sync                  # 依存関係のインストール（dev 含む）
-uv run pytest            # テスト
-uv run textual console   # 開発コンソール（別ターミナル）
+uv sync                  # install dependencies (including dev)
+uv run pytest            # run tests
+uv run textual console   # dev console (separate terminal)
 uv run textual run --dev src/agenttakt/tui/app.py
 ```
 
-実装の進捗は [親 issue #3](https://github.com/ryoohshima/AgentTakt/issues/3) と `tasks/todo.md` を参照。
+Progress is tracked in [issue #3](https://github.com/ryoohshima/AgentTakt/issues/3).
 
-## ステータス
+## Status
 
-MVP 開発中。マイルストーン: M0 足場 → M1 静的描画 → M2 マウス編集 → M3 MCP 連携 → M4 磨き込み（braille 曲線ほか）。
+MVP under development. Milestones: M0 scaffolding → M1 static rendering → M2 mouse editing → M3 MCP integration → M4 polish (braille curves, etc.).
+
+## License
+
+[MIT](LICENSE)

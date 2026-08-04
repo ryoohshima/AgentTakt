@@ -1,7 +1,7 @@
 [project]
 name = "agenttakt"
 version = "0.1.0"
-description = "MCP-TUI Agent Plan Approver — AI エージェントの実行計画をターミナルのノードエディタでレビュー・編集・承認する"
+description = "Review, edit, and approve AI agent task plans in a visual node editor in your terminal (MCP server + TUI)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
