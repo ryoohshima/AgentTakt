@@ -32,12 +32,19 @@ Claude Code (Executor)
 
 ## Installation
 
-With [uv](https://docs.astral.sh/uv/) you can run AgentTakt directly via `uvx agenttakt` — no installation needed. For regular use, install with either:
+**If you have [uv](https://docs.astral.sh/uv/), no installation is needed.** `uvx agenttakt` fetches and runs AgentTakt on demand, and the `.mcp.json` example below starts the MCP server the same way.
+
+**If you don't have uv, install AgentTakt once:**
 
 ```sh
-uv tool install agenttakt                # uv
-pipx install agenttakt                   # pipx
 brew install ryoohshima/tap/agenttakt    # Homebrew
+pipx install agenttakt                   # pipx
+```
+
+Installing is also handy for everyday use even with uv — you start the TUI by hand, so plain `agenttakt` beats typing `uvx agenttakt` each time:
+
+```sh
+uv tool install agenttakt
 ```
 
 ## Quick Start
