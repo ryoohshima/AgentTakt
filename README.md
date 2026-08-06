@@ -2,11 +2,11 @@
 
 [![PyPI - Version](https://img.shields.io/pypi/v/agenttakt)](https://pypi.org/project/agenttakt/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/agenttakt)](https://pypi.org/project/agenttakt/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/ryoohshima/AgentTakt/blob/main/LICENSE)
 
 Review, edit, and approve AI agent task plans in a ComfyUI-style visual node editor — right in your terminal.
 
-![AgentTakt editor screen](docs/images/editor.svg)
+![AgentTakt editor screen](https://raw.githubusercontent.com/ryoohshima/AgentTakt/main/docs/images/editor.svg)
 
 AgentTakt is an MCP (Model Context Protocol) server and TUI tool. When an AI agent (an "Executor" such as Claude Code) sends a task execution plan over MCP, AgentTakt renders it as a node graph in your terminal. You review it with mouse and keyboard — move, add, and delete nodes, draw dependency edges, edit parameters — then approve, and the edited plan JSON is returned to the Executor for execution.
 
