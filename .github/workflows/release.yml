@@ -1,8 +1,18 @@
 name: Release
 
+# `v*` タグの push を起点に、テスト → ビルド → PyPI 公開 → GitHub Release 作成 →
+# Homebrew tap への formula 更新 PR、までを一続きで流す。
+# タグ push は不可逆な公開操作である点に注意。
+
 on:
   push:
     tags: ["v*"]
+
+permissions:
+  contents: read
+
+env:
+  HOMEBREW_TAP_REPO: ryoohshima/homebrew-tap
 
 jobs:
   test:
@@ -13,6 +23,21 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync
+
+      # タグと __version__ がずれたまま公開すると、PyPI は同一バージョンの
+      # 再アップロードを許さないため後から直せない。公開前にここで止める。
+      - name: タグとパッケージバージョンの一致を確認
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          tag_version="${TAG_NAME#v}"
+          pkg_version="$(uv run python -c 'import agenttakt; print(agenttakt.__version__)')"
+          if [ "$tag_version" != "$pkg_version" ]; then
+            echo "::error::タグ ($tag_version) と __version__ ($pkg_version) が一致しない"
+            exit 1
+          fi
+          echo "version = $pkg_version"
+
       - run: uv run pytest
 
   build:
@@ -42,3 +67,106 @@ jobs:
           name: dist
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # リリースノートの見出し分類は .github/release.yml の設定に従う
+      - name: GitHub Release を作成
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG_NAME" dist/* \
+            --title "$TAG_NAME" \
+            --generate-notes \
+            --verify-tag
+
+  homebrew:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      # job レベルの if では secrets を参照できないため、step で判定して以降を飛ばす
+      - name: tap への書き込みトークンを確認
+        id: guard
+        env:
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          if [ -z "$TAP_TOKEN" ]; then
+            echo "::warning::HOMEBREW_TAP_TOKEN が未設定のため formula 更新をスキップする"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.skip == 'false'
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.skip == 'false'
+        with:
+          repository: ${{ env.HOMEBREW_TAP_REPO }}
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+
+      # PyPI の CDN へ反映されるまで待ち、sdist の url / sha256 を引いて差し替える
+      - name: formula の url / sha256 を更新
+        if: steps.guard.outputs.skip == 'false'
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          python3 .github/scripts/bump_homebrew_formula.py \
+            "${TAG_NAME#v}" tap/Formula/agenttakt.rb
+
+      - name: tap に更新 PR を作成
+        if: steps.guard.outputs.skip == 'false'
+        working-directory: tap
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          GH_REPO: ${{ env.HOMEBREW_TAP_REPO }}
+          TAG_NAME: ${{ github.ref_name }}
+          SOURCE_REPO: ${{ github.repository }}
+        run: |
+          version="${TAG_NAME#v}"
+          branch="agenttakt-${version}"
+
+          if git diff --quiet; then
+            echo "::warning::formula に差分がない（同一バージョンでの再実行と思われる）"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -am "agenttakt ${version}"
+          git push --force origin "$branch"
+
+          # 既存 PR があれば push だけで反映されるので作り直さない
+          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            echo "既存の PR を更新した"
+            exit 0
+          fi
+
+          cat > "${RUNNER_TEMP}/pr-body.md" <<EOF
+          https://github.com/${SOURCE_REPO} の ${TAG_NAME} リリースに伴う自動更新。
+
+          - 本体の url / sha256 を ${version} の sdist へ差し替えた
+          - resource 節は更新していない。直接依存（textual / mcp / pydantic）を変更した
+            リリースでは手動で再生成し、この PR に追加すること
+
+          マージ前に tap の brew test-bot（macOS / Ubuntu の実ビルド）が通ることを確認する。
+          EOF
+
+          gh pr create \
+            --head "$branch" \
+            --title "agenttakt ${version}" \
+            --body-file "${RUNNER_TEMP}/pr-body.md"
