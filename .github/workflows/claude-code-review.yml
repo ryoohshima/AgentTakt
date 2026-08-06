@@ -12,11 +12,11 @@ on:
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    # dependabot の依存更新 PR はレビュー対象から外す。
+    # claude-code-action は bot 起点のワークフローを既定で拒否するため必ず失敗する
+    # （bot の PR には prompt injection を仕込む余地があるという理由の安全機構）。
+    # 差分もバージョン番号のみで、レビューさせる価値が薄い。
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
 
     runs-on: ubuntu-latest
     permissions:
