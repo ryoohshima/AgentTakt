@@ -21,7 +21,10 @@ jobs:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.12"
+          # Homebrew formula が python@3.13 でビルドするため、
+          # 配布物と同じ Python でリリース前の確認を行う。
+          # 全バージョンの網羅は ci.yml が main で済ませている。
+          python-version: "3.13"
       - run: uv sync
 
       # タグと __version__ がずれたまま公開すると、PyPI は同一バージョンの
