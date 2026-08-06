@@ -49,13 +49,36 @@ uv tool install agenttakt
 
 ## Quick Start
 
-### 1. Start the TUI (human side, separate terminal)
+AgentTakt runs as **two processes**: the MCP server, which Claude Code starts for you, and the TUI, which **you start yourself in a separate terminal**. The TUI is what displays the plan, so start it before asking the Executor for approval.
+
+```
+┌─ Terminal A: you ───────────────────┐   ┌─ Terminal B: Claude Code ───────────┐
+│ $ uvx agenttakt                     │   │ $ claude                            │
+│                                     │   │                                     │
+│   ╭─ grep ───╮                      │   │ > Plan the refactor, then ask       │
+│   │ pattern  │───╮                  │   │   me to approve it                  │
+│   ╰──────────╯   │                  │   │                                     │
+│             ╭────▼─────╮            │   │   calls request_approval(plan)      │
+│             │   edit   │            │   │   waiting for approval...           │
+│             ╰──────────╯            │   │   (blocked until you decide)        │
+│                                     │   │                                     │
+│   [a] Approve   [r] Reject          │   │                                     │
+└─────────────────────────────────────┘   └─────────────────────────────────────┘
+             ▲                                                    │
+             ╰──────────────── Unix domain socket ────────────────╯
+```
+
+Running the TUI in the same session as Claude Code does not work. A stdio MCP server has its standard input and output reserved for protocol traffic, so the same process cannot also drive a full-screen terminal UI. That is why the two halves are separate processes talking over a Unix domain socket.
+
+### 1. Start the TUI (in its own terminal)
 
 ```sh
 uvx agenttakt           # if installed: agenttakt (short alias: agt)
 ```
 
-An idle screen appears, waiting for plans from the Executor.
+An idle screen appears, waiting for plans from the Executor. Leave this terminal open. If no TUI is running when the Executor calls `request_approval`, the call fails with:
+
+> AgentTakt editor is not running. Ask the user to run "agenttakt" in a separate terminal, then call request_approval again.
 
 ### 2. Register the MCP server with the Executor (Claude Code)
 
