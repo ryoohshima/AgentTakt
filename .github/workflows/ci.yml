@@ -1,0 +1,40 @@
+name: CI
+
+# PR と main への push で pytest を回す。
+# リリース時（release.yml）にもテストは走るが、そこで初めて失敗が判明すると
+# タグを打ち直す羽目になるため、日常の変更をここで先に止める。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        # Unix domain socket のパス長制限や TUI 挙動が macOS 固有で崩れうるため、
+        # 最新バージョンだけ macOS でも確認する。
+        include:
+          - os: macos-latest
+            python-version: "3.13"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync
+      - run: uv run pytest
