@@ -1,0 +1,39 @@
+{
+  "graph_id": "demo-auth-refactor",
+  "status": "pending_approval",
+  "nodes": [
+    {
+      "id": "find",
+      "type": "grep",
+      "title": "Find usages",
+      "position": { "x": 0, "y": 6 },
+      "data": { "pattern": "useAuth" }
+    },
+    {
+      "id": "read",
+      "type": "read",
+      "title": "Read auth module",
+      "position": { "x": 28, "y": 0 },
+      "data": { "file": "src/auth.ts" }
+    },
+    {
+      "id": "refactor",
+      "type": "edit",
+      "title": "Refactor useAuth",
+      "position": { "x": 44, "y": 19 },
+      "data": { "file": "src/auth.ts" }
+    },
+    {
+      "id": "test",
+      "type": "test",
+      "title": "Run tests",
+      "position": { "x": 54, "y": 6 },
+      "data": { "command": "pnpm test" }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "find", "target": "read" },
+    { "id": "e2", "source": "find", "target": "refactor" },
+    { "id": "e3", "source": "read", "target": "test" }
+  ]
+}
