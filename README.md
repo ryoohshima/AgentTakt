@@ -1,6 +1,6 @@
 <!-- mcp-name: io.github.ryoohshima/agenttakt -->
 
-# AgentTakt
+# <img src="https://raw.githubusercontent.com/ryoohshima/AgentTakt/main/docs/images/icon.png" alt="AgentTakt icon" width="40" align="top" /> AgentTakt
 
 [![PyPI - Version](https://img.shields.io/pypi/v/agenttakt)](https://pypi.org/project/agenttakt/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/agenttakt)](https://pypi.org/project/agenttakt/)

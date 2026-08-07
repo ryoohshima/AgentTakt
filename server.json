@@ -10,6 +10,13 @@
     "id": "1319748709"
   },
   "websiteUrl": "https://github.com/ryoohshima/AgentTakt",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/ryoohshima/AgentTakt/main/docs/images/icon.png",
+      "sizes": ["212x212"],
+      "mimeType": "image/png"
+    }
+  ],
   "packages": [
     {
       "registryType": "pypi",
