@@ -1,12 +1,14 @@
 <!-- mcp-name: io.github.ryoohshima/agenttakt -->
 
-# <img src="https://raw.githubusercontent.com/ryoohshima/AgentTakt/main/docs/images/icon.png" alt="AgentTakt icon" width="40" align="top" /> AgentTakt
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ryoohshima/AgentTakt/main/docs/images/github-social-preview.png" alt="AgentTakt — Review, edit, and approve AI agent task plans in a ComfyUI-style visual node editor, right in your terminal." />
+</p>
 
-[![PyPI - Version](https://img.shields.io/pypi/v/agenttakt)](https://pypi.org/project/agenttakt/)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/agenttakt)](https://pypi.org/project/agenttakt/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/ryoohshima/AgentTakt/blob/main/LICENSE)
-
-Review, edit, and approve AI agent task plans in a ComfyUI-style visual node editor — right in your terminal.
+<p align="center">
+  <a href="https://pypi.org/project/agenttakt/"><img src="https://img.shields.io/pypi/v/agenttakt" alt="PyPI - Version" /></a>
+  <a href="https://pypi.org/project/agenttakt/"><img src="https://img.shields.io/pypi/pyversions/agenttakt" alt="PyPI - Python Version" /></a>
+  <a href="https://github.com/ryoohshima/AgentTakt/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License: MIT" /></a>
+</p>
 
 ![AgentTakt demo: drag nodes, draw a dependency edge, approve](https://raw.githubusercontent.com/ryoohshima/AgentTakt/main/docs/images/demo.gif)
 
