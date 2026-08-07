@@ -143,6 +143,7 @@ Edges are drawn as braille Bezier-like curves by default. If they render poorly 
 ## Documentation
 
 - [Plan JSON schema](docs/schema.md) — data model, node fields, what to write in `type` / `data`, and validation rules
+- [Changelog](https://github.com/ryoohshima/AgentTakt/releases) — release notes for each version
 
 ## License
 
