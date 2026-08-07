@@ -1,35 +1,35 @@
 ---
-name: バグ報告
-about: バグの報告
+name: Bug report
+about: Report a bug
 title: "[Bug] "
 labels: bug
 assignees: ''
 ---
 
-## 概要
+## Summary
 
-<!-- どのような不具合か簡潔に記載してください -->
+<!-- Briefly describe the issue -->
 
-## 再現手順
+## Steps to Reproduce
 
 1.
 2.
 3.
 
-## 期待動作
+## Expected Behavior
 
-<!-- 本来どう動作すべきか -->
+<!-- What should happen -->
 
-## 実際の動作
+## Actual Behavior
 
-<!-- 実際に起きた動作 -->
+<!-- What actually happens -->
 
-## 環境
+## Environment
 
 - OS:
-- ブラウザ / ランタイム:
-- バージョン:
+- Browser / Runtime:
+- Version:
 
-## 補足
+## Additional Context
 
-<!-- スクリーンショット、ログ、関連 PR など -->
+<!-- Screenshots, logs, related PRs, etc. -->
