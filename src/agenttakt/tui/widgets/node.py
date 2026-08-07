@@ -54,6 +54,9 @@ class NodeWidget(Static):
     ポート判定はセル解像度が粗いため右辺 1 列全体に拡大している。
     """
 
+    # ドラッグ操作がテキスト選択と解釈されてハイライトが残るのを防ぐ
+    ALLOW_SELECT = False
+
     def __init__(self, node: Node) -> None:
         super().__init__("\n".join(summarize_data(node.data)))
         self.node = node
