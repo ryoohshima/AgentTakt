@@ -1,0 +1,35 @@
+name: PR Auto Label
+
+# PR タイトルの conventional-commit プレフィックス（feat: / fix: / docs: 等）を
+# そのままラベルとして付与する。リリースノートの分類（.github/release.yml）が
+# PR のラベルでマッチするため、ラベルが無いと全 PR が「その他」に落ちる。
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: タイトルのプレフィックスをラベルとして付与
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          prefix="${PR_TITLE%%:*}"   # "feat(tui): ..." → "feat(tui)"
+          prefix="${prefix%%(*}"     # "feat(tui)" → "feat"
+          case "$prefix" in
+            feat|fix|docs|refactor|test|perf|build|ci|chore)
+              gh pr edit "$PR_NUMBER" --add-label "$prefix"
+              ;;
+            *)
+              echo "conventional-commit プレフィックスなし: $PR_TITLE"
+              ;;
+          esac
+          # ponytail: 追加のみでタイトル変更時の旧ラベルは残る。誤分類が実際に出たら remove を足す
