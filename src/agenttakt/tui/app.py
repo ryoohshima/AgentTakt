@@ -9,6 +9,7 @@ from pathlib import Path
 
 from textual.app import App
 
+import agenttakt.tui.textual_header_patch  # noqa: F401  Header の mount 前に適用が必要
 from agenttakt.bridge.paths import default_socket_path
 from agenttakt.bridge.protocol import ReviewResponse
 from agenttakt.bridge.server import BridgeServer, PendingReview
