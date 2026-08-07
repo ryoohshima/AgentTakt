@@ -3,9 +3,12 @@ name: PR Auto Label
 # PR タイトルの conventional-commit プレフィックス（feat: / fix: / docs: 等）を
 # そのままラベルとして付与する。リリースノートの分類（.github/release.yml）が
 # PR のラベルでマッチするため、ラベルが無いと全 PR が「その他」に落ちる。
+#
+# fork からの PR でも書き込みトークンを得るため pull_request_target を使う。
+# そのため PR 側のコードを checkout・実行してはならない（タイトルは env 経由でのみ扱う）。
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, edited]
 
 permissions:
