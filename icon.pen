@@ -1,0 +1,566 @@
+{
+  "version": "2.15",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "AgentTakt アイコン候補",
+      "clip": true,
+      "fill": "#F1F1F4",
+      "layout": "vertical",
+      "gap": 28,
+      "padding": 60,
+      "children": [
+        {
+          "type": "text",
+          "id": "EZTxS",
+          "name": "Title",
+          "fill": "#111111",
+          "content": "AgentTakt アイコン候補",
+          "fontFamily": "Inter",
+          "fontSize": 26,
+          "fontWeight": "700"
+        },
+        {
+          "type": "text",
+          "id": "aHtTM",
+          "name": "Subtitle",
+          "fill": "#666666",
+          "content": "指揮棒（バトン）をモチーフにした最終候補4案",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "g19sJq",
+          "name": "Icon Row",
+          "gap": 36,
+          "children": [
+            {
+              "type": "frame",
+              "id": "zRQqt",
+              "name": "Motion Column",
+              "layout": "vertical",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "RKz24",
+                  "name": "Motion Tile",
+                  "width": 160,
+                  "height": 160,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0F172A",
+                        "position": 0
+                      },
+                      {
+                        "color": "#1E3A8A",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 36,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000033",
+                    "offset": {
+                      "x": 0,
+                      "y": 10
+                    },
+                    "blur": 22
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "path",
+                      "id": "buwkl",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Rod",
+                      "geometry": "M16.89324 77.21241l10.21352 9.57518 55.98755-67.76168-2.18862-2.05182z m-1.89324 4.78759a7 7 0 1 0 14 0 7 7 0 1 0-14 0z m65.5-64a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0z",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "fill": "#FFFFFF",
+                      "width": 96,
+                      "height": 96
+                    },
+                    {
+                      "type": "path",
+                      "id": "I6Y0Hi",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Motion Arc 1",
+                      "opacity": 0.9,
+                      "geometry": "M85.92126 18.93472q1.55027-6.77102 3.78448-14.27157",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "width": 96,
+                      "height": 96,
+                      "stroke": "#FFFFFF",
+                      "strokeWidth": 2.6,
+                      "strokeLinecap": "round"
+                    },
+                    {
+                      "type": "path",
+                      "id": "HsxK4",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Motion Arc 2",
+                      "opacity": 0.65,
+                      "geometry": "M94.21975 13.00723q0.09119-8.1389 0.86632-17.00734",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "width": 96,
+                      "height": 96,
+                      "stroke": "#FFFFFF",
+                      "strokeWidth": 2.2,
+                      "strokeLinecap": "round"
+                    },
+                    {
+                      "type": "path",
+                      "id": "yaizc",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Motion Arc 3",
+                      "opacity": 0.4,
+                      "geometry": "M102.51823 7.07974q-1.36788-9.50678-2.05182-19.7431",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "width": 96,
+                      "height": 96,
+                      "stroke": "#FFFFFF",
+                      "strokeWidth": 1.8,
+                      "strokeLinecap": "round"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "L3IYij",
+                  "name": "Motion Label",
+                  "fill": "#222222",
+                  "content": "案2・モーション",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "VXFgX",
+              "name": "AN Tip Cluster Column",
+              "layout": "vertical",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "pYuqV",
+                  "name": "AN Tip Cluster Tile",
+                  "width": 160,
+                  "height": 160,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0F766E",
+                        "position": 0
+                      },
+                      {
+                        "color": "#134E4A",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 36,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000033",
+                    "offset": {
+                      "x": 0,
+                      "y": 10
+                    },
+                    "blur": 22
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "path",
+                      "id": "h63Hnz",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Rod",
+                      "geometry": "M16.89324 77.21241l10.21352 9.57518 55.98755-67.76168-2.18862-2.05182z m-1.89324 4.78759a7 7 0 1 0 14 0 7 7 0 1 0-14 0z m65.5-64a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0z",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "fill": "#FFFFFF",
+                      "width": 96,
+                      "height": 96
+                    },
+                    {
+                      "type": "path",
+                      "id": "jR2QB",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Tip Spokes",
+                      "opacity": 0.8,
+                      "geometry": "M82 18l-0.27358-19.44673m0.27358 19.44673l9.57518-10.21352m-9.57518 10.21352l19.42393-0.98032",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "width": 96,
+                      "height": 96,
+                      "stroke": "#5EEAD4",
+                      "strokeWidth": 1.8,
+                      "strokeLinecap": "round"
+                    },
+                    {
+                      "type": "path",
+                      "id": "ZJ25Y",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Tip Nodes",
+                      "geometry": "M78.12642-1.44673a3.6 3.6 0 1 0 7.2 0 3.6 3.6 0 1 0-7.2 0z m9.84876 9.23321a3.6 3.6 0 1 0 7.2 0 3.6 3.6 0 1 0-7.2 0z m9.84875 9.2332a3.6 3.6 0 1 0 7.2 0 3.6 3.6 0 1 0-7.2 0z",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "fill": "#5EEAD4",
+                      "width": 96,
+                      "height": 96
+                    },
+                    {
+                      "type": "path",
+                      "id": "eLKGx",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Tip Core",
+                      "geometry": "M77 18a5 5 0 1 0 10 0 5 5 0 1 0-10 0z",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "fill": "#5EEAD4",
+                      "width": 96,
+                      "height": 96
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "u10Dn0",
+                  "name": "AN Tip Cluster Label",
+                  "fill": "#222222",
+                  "content": "案3E・先端クラスター",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EUV9b",
+              "name": "MO Sweep Column",
+              "layout": "vertical",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "LvpvJ",
+                  "name": "MO Sweep Tile",
+                  "width": 160,
+                  "height": 160,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#0F172A",
+                        "position": 0
+                      },
+                      {
+                        "color": "#312E81",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 36,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000033",
+                    "offset": {
+                      "x": 0,
+                      "y": 10
+                    },
+                    "blur": 22
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "path",
+                      "id": "NsmfV",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Ghost 1",
+                      "opacity": 0.18,
+                      "geometry": "M5.95018 88.88501l10.21352 9.57517 55.98755-67.76167-2.18861-2.05183z m-1.89324 4.78759a7 7 0 1 0 14 0 7 7 0 1 0-14 0z m65.5-64a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0z",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "fill": "#FFFFFF",
+                      "width": 96,
+                      "height": 96
+                    },
+                    {
+                      "type": "path",
+                      "id": "xWBYB",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Ghost 2",
+                      "opacity": 0.32,
+                      "geometry": "M11.42171 83.04871l10.21352 9.57518 55.98755-67.76168-2.18861-2.05182z m-1.89324 4.78759a7 7 0 1 0 14 0 7 7 0 1 0-14 0z m65.5-64a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0z",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "fill": "#FFFFFF",
+                      "width": 96,
+                      "height": 96
+                    },
+                    {
+                      "type": "path",
+                      "id": "jygAz",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Rod",
+                      "geometry": "M16.89324 77.21241l10.21352 9.57518 55.98755-67.76168-2.18862-2.05182z m-1.89324 4.78759a7 7 0 1 0 14 0 7 7 0 1 0-14 0z m65.5-64a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0z",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "fill": "#FFFFFF",
+                      "width": 96,
+                      "height": 96
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "GIDG0",
+                  "name": "MO Sweep Label",
+                  "fill": "#222222",
+                  "content": "案2C・残像スイープ",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "C01dtn",
+              "name": "MO Pulse Column",
+              "layout": "vertical",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tZpb6",
+                  "name": "Adopted Badge",
+                  "fill": "#16A34A",
+                  "cornerRadius": 999,
+                  "padding": [
+                    4,
+                    12
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "a9AHO",
+                      "name": "Adopted Label",
+                      "fill": "#FFFFFF",
+                      "content": "採用",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "xs982",
+                  "name": "AgentTakt Icon",
+                  "reusable": true,
+                  "width": 160,
+                  "height": 160,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#111827",
+                        "position": 0
+                      },
+                      {
+                        "color": "#2563EB",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 36,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000033",
+                    "offset": {
+                      "x": 0,
+                      "y": 10
+                    },
+                    "blur": 22
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "path",
+                      "id": "RIwLG",
+                      "x": 32,
+                      "y": 32,
+                      "name": "Rod",
+                      "geometry": "M16.89324 77.21241l10.21352 9.57518 55.98755-67.76168-2.18862-2.05182z m-1.89324 4.78759a7 7 0 1 0 14 0 7 7 0 1 0-14 0z m65.5-64a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0z",
+                      "viewBox": [
+                        0,
+                        0,
+                        100,
+                        100
+                      ],
+                      "fill": "#FFFFFF",
+                      "width": 96,
+                      "height": 96
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "kCDCF",
+                      "x": 103.52,
+                      "y": 42.08,
+                      "name": "Pulse Ring 1",
+                      "opacity": 0.9,
+                      "width": 14.4,
+                      "height": 14.4,
+                      "stroke": "#7DD3FC",
+                      "strokeWidth": 2
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "Vgh1e",
+                      "x": 98.72,
+                      "y": 37.28,
+                      "name": "Pulse Ring 2",
+                      "opacity": 0.55,
+                      "width": 24,
+                      "height": 24,
+                      "stroke": "#7DD3FC",
+                      "strokeWidth": 2
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "MlvXX",
+                      "x": 93.92,
+                      "y": 32.480000000000004,
+                      "name": "Pulse Ring 3",
+                      "opacity": 0.28,
+                      "width": 33.6,
+                      "height": 33.6,
+                      "stroke": "#7DD3FC",
+                      "strokeWidth": 2
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "doDdM",
+                  "name": "MO Pulse Label",
+                  "fill": "#166534",
+                  "content": "案2E・パルスリング（採用）",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "fileToken": "28b74cd9-bf09-4d30-bfbc-41924a714c34"
+}
