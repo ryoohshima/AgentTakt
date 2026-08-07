@@ -1,3 +1,5 @@
+<!-- mcp-name: io.github.ryoohshima/agenttakt -->
+
 # AgentTakt
 
 [![PyPI - Version](https://img.shields.io/pypi/v/agenttakt)](https://pypi.org/project/agenttakt/)
