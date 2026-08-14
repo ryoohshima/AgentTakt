@@ -101,7 +101,7 @@ Add the following to your project's `.mcp.json`:
 ```
 
 > [!IMPORTANT]
-> **Setting `timeout` (milliseconds) explicitly is required.** The `request_approval` tool blocks until the human finishes reviewing. MCP progress notifications do not extend client-side timeouts, so the default would cut the request off before approval. The example above sets 30 minutes (`1800000`).
+> **Setting `timeout` (milliseconds) explicitly is required.** The `request_approval` tool blocks until the human finishes reviewing. MCP progress notifications do not extend client-side timeouts, so the default would cut the request off before approval. The example above sets 30 minutes (`1800000`). This does not apply to `show_plan`, which returns as soon as the TUI receives the plan.
 
 ### 3. Request approval from the Executor
 
@@ -112,6 +112,23 @@ When the Executor calls the MCP tool `request_approval(plan, summary)`, the plan
 ```
 
 See [docs/schema.md](docs/schema.md) for the plan JSON format and what to write in each node.
+
+### Display-only plans (`show_plan`)
+
+`show_plan(plan, summary)` shows a plan in the TUI **without waiting for approval** — it returns `{"status": "displayed"}` as soon as the editor receives it. Use it when you just want visibility into what the agent is planning, in any mode (not only plan mode). The plan opens with a `[view-only]` header; closing it sends nothing back to the Executor.
+
+Agents call `request_approval` naturally when the host is in plan mode, but they will not volunteer plans outside it. To encourage that, add an instruction like this to your project's `CLAUDE.md` (or equivalent agent instructions):
+
+```markdown
+## AgentTakt
+
+Whenever you formulate a multi-step plan — in any mode, not just plan mode —
+submit it with the AgentTakt `show_plan` tool so the human can see it as a
+node graph. Use `request_approval` instead when you need the human's approval
+before executing.
+```
+
+Note: a `[view-only]` plan occupies the editor until dismissed; a later `request_approval` waits in the queue behind it.
 
 ### Debug mode (try it without MCP)
 

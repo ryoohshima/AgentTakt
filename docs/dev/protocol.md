@@ -38,6 +38,18 @@ A tagged union discriminated by the `type` field.
 - `request_id`: assigned by the MCP side as a uuid4
 - `meta.summary`: optional one-line description shown in the TUI header
 
+### `show_plan` (MCP → TUI)
+
+Same shape as `review_request` (with `"type": "show_plan"`), but display-only: the TUI writes back an `ack` immediately on receipt and never sends a `review_response` for it. The plan is queued and shown with a `[view-only]` header; whatever the human does with it is not reported back.
+
+### `ack` (TUI → MCP)
+
+```json
+{ "type": "ack", "request_id": "550e8400-..." }
+```
+
+Acknowledges receipt of a `show_plan` request. The MCP side disconnects as soon as it arrives.
+
 ### `review_response` (TUI → MCP)
 
 ```json
@@ -67,9 +79,9 @@ A tagged union discriminated by the `type` field.
 
 ## Connection lifecycle
 
-- **One request per connection.** The MCP side treats `connect → send review_request → receive review_response → disconnect` as one cycle (no multiplexing).
+- **One request per connection.** The MCP side treats `connect → send review_request → receive review_response → disconnect` as one cycle (no multiplexing). For `show_plan` the cycle is `connect → send show_plan → receive ack → disconnect`.
 - The TUI side (`BridgeServer`) accepts multiple simultaneous connections, queues requests FIFO, and processes them one at a time. Responses are written back to the connection they arrived on.
-- **Disconnect detection**: the TUI watches each connection's reader for EOF. If a connection drops because of an Executor-side timeout or cancellation, the request is removed from the queue; if it was being edited, the human is notified and returned to the idle screen.
+- **Disconnect detection**: the TUI watches each connection's reader for EOF. If a connection drops because of an Executor-side timeout or cancellation, the request is removed from the queue; if it was being edited, the human is notified and returned to the idle screen. `show_plan` requests are exempt: they are already acked, so the sender's immediate disconnect is the normal case and the plan stays queued.
 
 ## Failure handling
 

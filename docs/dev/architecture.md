@@ -39,11 +39,13 @@ sequenceDiagram
     E->>E: Start executing the approved plan
 ```
 
+There is also a non-blocking variant: `show_plan(plan_json)` sends a `show_plan` message, the TUI replies with an `ack` on receipt, and the tool returns immediately with `{status: "displayed"}`. The plan is shown `[view-only]`; no human decision is reported back. See [protocol.md](./protocol.md).
+
 ## Process lifecycle
 
 | Process | Start | Stop | Failure handling |
 |---|---|---|---|
-| `agenttakt serve` | Spawned by the Executor via `.mcp.json` | Killed by the Executor | If no TUI is connected, `request_approval` returns an error telling the Executor to ask the human to start the TUI |
+| `agenttakt serve` | Spawned by the Executor via `.mcp.json` | Killed by the Executor | If no TUI is connected, `request_approval` / `show_plan` return an error telling the Executor to ask the human to start the TUI |
 | `agenttakt` (TUI) | Started by the human in a separate terminal | `q` / Ctrl+C | Unlinks the socket on exit (`finally` + SIGINT/SIGTERM handler). On startup, a stale socket is detected, unlinked, and re-bound |
 
 ## Handling multiple requests
@@ -55,7 +57,7 @@ sequenceDiagram
 
 ## Important timeout constraint
 
-`request_approval` blocks for minutes to tens of minutes while waiting for human approval. MCP progress notifications do not extend the client-side timeout, so **setting `timeout` (milliseconds) explicitly for this server in the consumer's `.mcp.json` is required**. See the [README](../../README.md) for a configuration example.
+`request_approval` blocks for minutes to tens of minutes while waiting for human approval. MCP progress notifications do not extend the client-side timeout, so **setting `timeout` (milliseconds) explicitly for this server in the consumer's `.mcp.json` is required**. See the [README](../../README.md) for a configuration example. `show_plan` returns as soon as the TUI acks and is unaffected.
 
 ## Module layout
 

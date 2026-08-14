@@ -20,9 +20,14 @@ from agenttakt.bridge.paths import prepare_socket_dir
 
 @dataclass
 class PendingReview:
-    """未応答のレビュー依頼 1 件。接続に紐付く。"""
+    """未応答のレビュー依頼 1 件。接続に紐付く。
 
-    request: protocol.ReviewRequest
+    show_plan（表示のみ）は受信時に ack 済みのため answered=True で作られる。
+    この場合 respond() は no-op になり、送信元の切断でも on_disconnect は呼ばれない
+    （送信元は ack 直後に切断するのが正常系）。
+    """
+
+    request: protocol.ReviewRequest | protocol.ShowPlanRequest
     writer: asyncio.StreamWriter = field(repr=False)
     answered: bool = False
     disconnected: bool = False
@@ -105,11 +110,18 @@ class BridgeServer:
         except ValidationError as error:
             await self._send_error(writer, "invalid_message", str(error))
             return
-        if not isinstance(message, protocol.ReviewRequest):
+        if not isinstance(message, (protocol.ReviewRequest, protocol.ShowPlanRequest)):
             await self._send_error(writer, "unexpected_message", f"type={message.type}")
             return
 
         pending = PendingReview(request=message, writer=writer)
+        if isinstance(message, protocol.ShowPlanRequest):
+            # 表示のみ: 人間を待たず受理を即応答する。answered=True にすることで
+            # respond() を no-op にし、送信元の即時切断を on_disconnect から除外する
+            pending.answered = True
+            writer.write(protocol.encode(protocol.Ack(request_id=message.request_id)))
+            with contextlib.suppress(Exception):
+                await writer.drain()
         self._on_request(pending)
 
         # 接続を読み続け、EOF（Executor のタイムアウト・キャンセル）を検出する

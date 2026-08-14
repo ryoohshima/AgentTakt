@@ -3,7 +3,7 @@
 import asyncio
 
 from agenttakt.bridge import protocol
-from agenttakt.bridge.client import request_review
+from agenttakt.bridge.client import request_review, send_show_plan
 from agenttakt.tui.app import AgentTaktApp
 from agenttakt.tui.screens.editor import EditorScreen
 from agenttakt.tui.screens.idle import IdleScreen
@@ -51,6 +51,30 @@ async def test_standalone_approve_flow(sock_path):
         assert result.decision == "approved"
         assert result.plan.status == "approved"
 
+        await wait_for(lambda: isinstance(app.screen, IdleScreen), pilot)
+
+
+async def test_show_plan_opens_view_only_editor(sock_path):
+    """show_plan は送信元切断後もエディタに表示され、承認しても何も送られない。"""
+    sock = sock_path
+    app = AgentTaktApp(socket_path=sock)
+    async with app.run_test(size=SIZE) as pilot:
+        await wait_for(sock.exists, pilot)
+
+        request = protocol.ShowPlanRequest(
+            request_id="s1",
+            plan=make_request().plan,
+            meta={"summary": "view test"},
+        )
+        await asyncio.wait_for(send_show_plan(request, sock), 3)  # ack で即返る
+
+        await wait_for(lambda: isinstance(app.screen, EditorScreen), pilot)
+        assert app.screen.summary == "[view-only] view test"
+
+        # 承認操作をしてもクラッシュせず idle に戻るだけ（応答先はもう居ない）
+        await pilot.press("a")
+        await pilot.pause()
+        await pilot.click("#ok")
         await wait_for(lambda: isinstance(app.screen, IdleScreen), pilot)
 
 

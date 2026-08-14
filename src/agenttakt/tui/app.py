@@ -11,7 +11,7 @@ from textual.app import App
 
 import agenttakt.tui.textual_header_patch  # noqa: F401  Header の mount 前に適用が必要
 from agenttakt.bridge.paths import default_socket_path
-from agenttakt.bridge.protocol import ReviewResponse
+from agenttakt.bridge.protocol import ReviewResponse, ShowPlanRequest
 from agenttakt.bridge.server import BridgeServer, PendingReview
 from agenttakt.models import Plan, apply_auto_layout
 from agenttakt.tui.screens.editor import EditorScreen, ReviewResult
@@ -88,6 +88,8 @@ class AgentTaktApp(App):
         self._queue.clear()
         self._active = None
         for pending in pendings:
+            if pending.answered:  # show_plan は ack 済みで応答不要
+                continue
             response = ReviewResponse(
                 request_id=pending.request.request_id,
                 decision="rejected",
@@ -117,12 +119,20 @@ class AgentTaktApp(App):
         pending = self._queue.popleft()
         self._active = pending
         plan = apply_auto_layout(pending.request.plan)
-        editor = EditorScreen(plan, summary=pending.request.meta.summary)
+        summary = pending.request.meta.summary
+        if isinstance(pending.request, ShowPlanRequest):
+            # 表示のみ（ack 済み）。承認結果はどこにも送られないことを明示する
+            summary = f"[view-only] {summary or plan.graph_id}"
+        editor = EditorScreen(plan, summary=summary)
         self.push_screen(editor, lambda result: self._finish_review(pending, result))
         self._update_idle_status()
 
     def _finish_review(self, pending: PendingReview, result: ReviewResult | None) -> None:
         self._active = None
+        if isinstance(pending.request, ShowPlanRequest):
+            # 表示のみ: ack 済みで応答先もないため何も送らない
+            self._show_next_review()
+            return
         if result is not None and self._bridge is not None and not pending.disconnected:
             response = ReviewResponse(
                 request_id=pending.request.request_id,

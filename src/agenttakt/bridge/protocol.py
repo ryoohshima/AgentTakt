@@ -26,6 +26,20 @@ class ReviewRequest(BaseModel):
     meta: ReviewMeta = Field(default_factory=ReviewMeta)
 
 
+class ShowPlanRequest(BaseModel):
+    """表示のみの依頼。TUI は受信直後に ack を返し、人間の操作を待たない。"""
+
+    type: Literal["show_plan"] = "show_plan"
+    request_id: str
+    plan: Plan
+    meta: ReviewMeta = Field(default_factory=ReviewMeta)
+
+
+class Ack(BaseModel):
+    type: Literal["ack"] = "ack"
+    request_id: str
+
+
 class ReviewResponse(BaseModel):
     type: Literal["review_response"] = "review_response"
     request_id: str
@@ -42,13 +56,16 @@ class ErrorMessage(BaseModel):
 
 
 Message = Annotated[
-    Union[ReviewRequest, ReviewResponse, ErrorMessage], Field(discriminator="type")
+    Union[ReviewRequest, ShowPlanRequest, Ack, ReviewResponse, ErrorMessage],
+    Field(discriminator="type"),
 ]
 
 _adapter: TypeAdapter[Message] = TypeAdapter(Message)
 
 
-def encode(message: ReviewRequest | ReviewResponse | ErrorMessage) -> bytes:
+def encode(
+    message: ReviewRequest | ShowPlanRequest | Ack | ReviewResponse | ErrorMessage,
+) -> bytes:
     """1 行の NDJSON フレームにエンコードする。"""
     return message.model_dump_json().encode("utf-8") + b"\n"
 
