@@ -3,7 +3,7 @@
   "name": "io.github.ryoohshima/agenttakt",
   "title": "AgentTakt",
   "description": "Review, edit, and approve AI agent task plans in a ComfyUI-style visual node editor in your terminal",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "repository": {
     "url": "https://github.com/ryoohshima/AgentTakt",
     "source": "github",
@@ -21,7 +21,7 @@
     {
       "registryType": "pypi",
       "identifier": "agenttakt",
-      "version": "0.1.5",
+      "version": "0.2.0",
       "runtimeHint": "uvx",
       "packageArguments": [
         {
