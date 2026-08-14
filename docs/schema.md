@@ -69,7 +69,7 @@ The same information is available in the in-TUI help (press `?`).
 
 ## Validation Rules
 
-The following are validated at the `request_approval` entry point (and when confirming edits in the TUI). Violations are returned to the Executor as a `ValueError`.
+The following are validated at the `request_approval` / `show_plan` entry points (and when confirming edits in the TUI). Violations are returned to the Executor as a `ValueError`.
 
 1. **ID uniqueness**: no duplicate node ids / edge ids
 2. **Endpoint existence**: every edge's `source` / `target` must exist in `nodes`

@@ -33,6 +33,18 @@ def test_discriminator_selects_message_type():
     assert isinstance(protocol.decode(protocol.encode(error)), protocol.ErrorMessage)
 
 
+def test_round_trip_show_plan_and_ack():
+    request = protocol.ShowPlanRequest(request_id="s1", plan=sample_plan())
+    decoded = protocol.decode(protocol.encode(request))
+    assert isinstance(decoded, protocol.ShowPlanRequest)
+    assert decoded.request_id == "s1"
+
+    ack = protocol.Ack(request_id="s1")
+    decoded_ack = protocol.decode(protocol.encode(ack))
+    assert isinstance(decoded_ack, protocol.Ack)
+    assert decoded_ack.request_id == "s1"
+
+
 def test_unknown_type_raises():
     with pytest.raises(ValidationError):
         protocol.decode(b'{"type": "unknown"}')

@@ -3,7 +3,7 @@ import asyncio
 import pytest
 
 from agenttakt.bridge import protocol
-from agenttakt.bridge.client import TuiNotRunningError, request_review
+from agenttakt.bridge.client import TuiNotRunningError, request_review, send_show_plan
 from agenttakt.bridge.server import AlreadyRunningError, BridgeServer
 
 
@@ -72,6 +72,30 @@ async def test_executor_disconnect_detected(sock_path):
         writer.close()  # Executor 側タイムアウト・キャンセル相当
         await asyncio.wait_for(recorder.disconnected.wait(), 2)
         assert recorder.requests[0].disconnected
+    finally:
+        await server.stop()
+
+
+async def test_show_plan_acked_and_stays_queued(sock_path):
+    """show_plan は ack で即返り、送信元の切断後もキューから消えない。"""
+    sock = sock_path
+    recorder = Recorder()
+    server = BridgeServer(sock, recorder.on_request, recorder.on_disconnect)
+    await server.start()
+    try:
+        request = protocol.ShowPlanRequest(
+            request_id="s1", plan={"graph_id": "g", "nodes": [], "edges": []}
+        )
+        # ack を受けて返る（人間の応答を待たない）＝ send 側は即切断する
+        await asyncio.wait_for(send_show_plan(request, sock), 2)
+        await asyncio.wait_for(recorder.arrived.wait(), 2)
+        pending = recorder.requests[0]
+        assert isinstance(pending.request, protocol.ShowPlanRequest)
+        assert pending.answered
+        # 切断が on_disconnect として扱われないことを確認する
+        await asyncio.sleep(0.1)
+        assert recorder.disconnects == []
+        assert not pending.disconnected
     finally:
         await server.stop()
 

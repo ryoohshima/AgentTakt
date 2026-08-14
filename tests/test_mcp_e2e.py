@@ -67,6 +67,35 @@ async def test_request_approval_without_tui(sock_path, monkeypatch):
         assert "editor is not running" in result_text(result)
 
 
+async def test_show_plan_returns_displayed(sock_path, monkeypatch):
+    sock = sock_path
+    monkeypatch.setenv("AGENTTAKT_SOCKET", str(sock))
+    received = []
+    server = BridgeServer(sock, received.append, lambda pending: None)
+    await server.start()
+    try:
+        async with create_connected_server_and_client_session(mcp._mcp_server) as client:
+            result = await client.call_tool(
+                "show_plan", {"plan": PLAN, "summary": "E2E view"}
+            )
+            assert not result.isError
+            assert json.loads(result_text(result))["status"] == "displayed"
+        assert len(received) == 1
+        assert received[0].request.plan.graph_id == "e2e"
+    finally:
+        await server.stop()
+
+
+async def test_show_plan_without_tui(sock_path, monkeypatch):
+    monkeypatch.setenv("AGENTTAKT_SOCKET", str(sock_path))
+    async with create_connected_server_and_client_session(mcp._mcp_server) as client:
+        result = await client.call_tool(
+            "show_plan", {"plan": {"graph_id": "x", "nodes": [], "edges": []}}
+        )
+        assert result.isError
+        assert "call show_plan again" in result_text(result)
+
+
 async def test_request_approval_invalid_plan(sock_path, monkeypatch):
     monkeypatch.setenv("AGENTTAKT_SOCKET", str(sock_path))
     cyclic = {

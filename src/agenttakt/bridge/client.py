@@ -22,9 +22,11 @@ class BridgeProtocolError(RuntimeError):
     """TUI 側からエラー応答や不正な応答が返った。"""
 
 
-async def request_review(
-    request: protocol.ReviewRequest, socket_path: Path | None = None
-) -> protocol.ReviewResponse:
+async def _roundtrip(
+    request: protocol.ReviewRequest | protocol.ShowPlanRequest,
+    socket_path: Path | None,
+) -> protocol.Message:
+    """接続 → リクエスト送信 → 応答 1 行受信 → 切断。"""
     path = socket_path or default_socket_path()
     try:
         reader, writer = await asyncio.open_unix_connection(str(path))
@@ -41,10 +43,26 @@ async def request_review(
         message = protocol.decode(line)
         if isinstance(message, protocol.ErrorMessage):
             raise BridgeProtocolError(f"{message.code}: {message.message}")
-        if not isinstance(message, protocol.ReviewResponse):
-            raise BridgeProtocolError("unexpected message type from TUI")
         return message
     finally:
         writer.close()
         with contextlib.suppress(Exception):
             await writer.wait_closed()
+
+
+async def request_review(
+    request: protocol.ReviewRequest, socket_path: Path | None = None
+) -> protocol.ReviewResponse:
+    message = await _roundtrip(request, socket_path)
+    if not isinstance(message, protocol.ReviewResponse):
+        raise BridgeProtocolError("unexpected message type from TUI")
+    return message
+
+
+async def send_show_plan(
+    request: protocol.ShowPlanRequest, socket_path: Path | None = None
+) -> None:
+    """表示のみの依頼を送る。TUI が受理（ack）した時点で返る。"""
+    message = await _roundtrip(request, socket_path)
+    if not isinstance(message, protocol.Ack) or message.request_id != request.request_id:
+        raise BridgeProtocolError("unexpected message type from TUI")
