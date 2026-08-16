@@ -62,12 +62,14 @@ class AgentTaktApp(App):
         """PyPI の新バージョン確認（thread worker）。失敗は沈黙する。"""
         latest = fetch_latest_version()
         if latest is not None and is_newer(latest, __version__):
-            self.call_from_thread(
-                self.notify,
-                f"agenttakt {latest} is available (you have {__version__}).",
-                title="Update available",
-                timeout=10,
-            )
+            # 取得中（~3 秒）にアプリが終了していると RuntimeError になるため黙殺する
+            with contextlib.suppress(RuntimeError):
+                self.call_from_thread(
+                    self.notify,
+                    f"agenttakt {latest} is available (you have {__version__}).",
+                    title="Update available",
+                    timeout=10,
+                )
 
     # --- open デバッグモード ---
 
