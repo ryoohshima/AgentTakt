@@ -12,7 +12,7 @@ from textual.app import App
 import agenttakt.tui.textual_header_patch  # noqa: F401  Header の mount 前に適用が必要
 from agenttakt.bridge.paths import default_socket_path
 from agenttakt.bridge.protocol import ReviewResponse, ShowPlanRequest
-from agenttakt.bridge.server import BridgeServer, PendingReview
+from agenttakt.bridge.server import AlreadyRunningError, BridgeServer, PendingReview
 from agenttakt.models import Plan, apply_auto_layout
 from agenttakt.tui.screens.editor import EditorScreen, ReviewResult
 from agenttakt.tui.screens.idle import IdleScreen
@@ -68,7 +68,16 @@ class AgentTaktApp(App):
             on_request=self._on_request,
             on_disconnect=self._on_disconnect,
         )
-        await self._bridge.start()
+        try:
+            await self._bridge.start()
+        except AlreadyRunningError as error:
+            # 下の finally に入る前に抜ける。stop() は無条件に unlink するため、
+            # 進むと稼働中インスタンスの socket を奪ってしまう
+            self.exit(
+                return_code=1,
+                message=f"{error}. Use the existing instance or quit it first.",
+            )
+            return
         # SIGTERM でも socket を後始末してから終了する（unlink は stop() が行う）
         loop = asyncio.get_running_loop()
         with contextlib.suppress(NotImplementedError, ValueError):
@@ -166,5 +175,6 @@ def run_open(plan_path: str, out_path: str | None = None, edge_style: str = "bra
 
 
 def run_standalone(edge_style: str = "braille") -> int:
-    AgentTaktApp(edge_style=edge_style).run()
-    return 0
+    app = AgentTaktApp(edge_style=edge_style)
+    app.run()
+    return app.return_code or 0
