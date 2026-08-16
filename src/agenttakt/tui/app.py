@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
+import os
 import signal
 from collections import deque
 from pathlib import Path
@@ -10,12 +11,14 @@ from pathlib import Path
 from textual.app import App
 
 import agenttakt.tui.textual_header_patch  # noqa: F401  Header の mount 前に適用が必要
+from agenttakt import __version__
 from agenttakt.bridge.paths import default_socket_path
 from agenttakt.bridge.protocol import ReviewResponse, ShowPlanRequest
 from agenttakt.bridge.server import BridgeServer, PendingReview
 from agenttakt.models import Plan, apply_auto_layout
 from agenttakt.tui.screens.editor import EditorScreen, ReviewResult
 from agenttakt.tui.screens.idle import IdleScreen
+from agenttakt.update_check import fetch_latest_version, is_newer
 
 
 class AgentTaktApp(App):
@@ -34,12 +37,14 @@ class AgentTaktApp(App):
         out_path: str | None = None,
         socket_path: Path | None = None,
         edge_style: str = "braille",
+        check_updates: bool = False,
     ) -> None:
         super().__init__()
         self._initial_plan = plan
         self._out_path = out_path
         self._socket_path = socket_path or default_socket_path()
         self.edge_style = edge_style  # "braille" | "orthogonal"
+        self._check_updates = check_updates
         self._bridge: BridgeServer | None = None
         self._queue: deque[PendingReview] = deque()
         self._active: PendingReview | None = None
@@ -50,6 +55,19 @@ class AgentTaktApp(App):
         else:
             self.push_screen(IdleScreen(str(self._socket_path)))
             self.run_worker(self._run_bridge(), exclusive=True)
+            if self._check_updates and not os.environ.get("AGENTTAKT_NO_UPDATE_CHECK"):
+                self.run_worker(self._check_for_update, thread=True)
+
+    def _check_for_update(self) -> None:
+        """PyPI の新バージョン確認（thread worker）。失敗は沈黙する。"""
+        latest = fetch_latest_version()
+        if latest is not None and is_newer(latest, __version__):
+            self.call_from_thread(
+                self.notify,
+                f"agenttakt {latest} is available (you have {__version__}).",
+                title="Update available",
+                timeout=10,
+            )
 
     # --- open デバッグモード ---
 
@@ -166,5 +184,5 @@ def run_open(plan_path: str, out_path: str | None = None, edge_style: str = "bra
 
 
 def run_standalone(edge_style: str = "braille") -> int:
-    AgentTaktApp(edge_style=edge_style).run()
+    AgentTaktApp(edge_style=edge_style, check_updates=True).run()
     return 0
