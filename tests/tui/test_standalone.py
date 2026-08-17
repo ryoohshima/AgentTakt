@@ -4,6 +4,7 @@ import asyncio
 
 from agenttakt.bridge import protocol
 from agenttakt.bridge.client import request_review, send_show_plan
+from agenttakt.bridge.server import BridgeServer
 from agenttakt.tui.app import AgentTaktApp
 from agenttakt.tui.screens.editor import EditorScreen
 from agenttakt.tui.screens.idle import IdleScreen
@@ -103,3 +104,22 @@ async def test_standalone_disconnect_returns_to_idle(sock_path):
 
         task.cancel()  # Executor 側キャンセル相当（接続が切れる）
         await wait_for(lambda: isinstance(app.screen, IdleScreen), pilot)
+
+
+async def test_second_instance_exits_cleanly(sock_path):
+    """二重起動は return_code=1 で静かに終了し、先行インスタンスの socket を奪わない。"""
+    first = BridgeServer(sock_path, on_request=lambda p: None, on_disconnect=lambda p: None)
+    await first.start()
+    try:
+        app = AgentTaktApp(socket_path=sock_path)
+        async with app.run_test(size=SIZE) as pilot:
+            await wait_for(lambda: app.return_code is not None, pilot)
+        assert app.return_code == 1
+        # 先行サーバーの socket が unlink されず、接続も受け付けたままであること
+        # （stop() の無条件 unlink に到達すると生きた socket を奪う回帰の検出）
+        assert sock_path.exists()
+        _, writer = await asyncio.open_unix_connection(str(sock_path))
+        writer.close()
+        await writer.wait_closed()
+    finally:
+        await first.stop()
