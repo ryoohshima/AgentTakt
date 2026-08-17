@@ -84,6 +84,8 @@ An idle screen appears, waiting for plans from the Executor. Leave this terminal
 
 > AgentTakt editor is not running. Ask the user to run "agenttakt" in a separate terminal, then call request_approval again.
 
+On startup the TUI checks PyPI in the background and shows a notification when a newer version is available. Set `AGENTTAKT_NO_UPDATE_CHECK=1` to disable the check.
+
 ### 2. Register the MCP server with the Executor (Claude Code)
 
 Add the following to your project's `.mcp.json`:
