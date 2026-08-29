@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "agenttakt": {
+      "command": "uv",
+      "args": ["run", "agenttakt", "serve"],
+      "timeout": 1800000
+    }
+  }
+}
