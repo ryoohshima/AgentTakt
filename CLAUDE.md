@@ -53,6 +53,16 @@ uv run textual console                            # 別ターミナルでログ�
 uv run textual run --dev src/agenttakt/tui/app.py
 ```
 
+## ドッグフーディング（AgentTakt 自身を使う）
+
+本リポジトリは `.mcp.json` で開発版の AgentTakt（`uv run agenttakt serve`）を MCP サーバーとして登録している。自分の道具は自分で使うこと。
+
+- 3 ステップ以上の作業計画を立てたら、着手前に `show_plan(plan, summary)` でノードグラフとして提示する（プランモードに限らない）
+- 不可逆な作業（リリース・スキーマ変更・広範なリファクタ）は `request_approval(plan, summary)` で承認を得てから着手する
+- plan JSON の形式は [docs/schema.md](./docs/schema.md) を参照
+- TUI が起動していないとツールはエラーを返す。その場合は別ターミナルで `uv run agenttakt` を起動するようユーザーに依頼する（勝手に起動しない）
+- 使いにくさ・表示の不備に気づいたら issue に残す（ドッグフーディングは実運用検証を兼ねる）
+
 ## このリポジトリ固有の注意事項
 
 - **stdio MCP サーバー内で TUI を起動してはならない**（stdio がプロトコル通信に専有されている）。TUI に触る処理は必ず TUI プロセス側に置く
