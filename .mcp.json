@@ -3,7 +3,7 @@
     "agenttakt": {
       "command": "uv",
       "args": ["run", "agenttakt", "serve"],
-      "timeout": 1800000
+      "timeout": 14400000
     }
   }
 }
