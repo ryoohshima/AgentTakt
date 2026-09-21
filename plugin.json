@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "agenttakt",
+  "description": "Review, edit, and approve AI agent task plans in a visual node editor in your terminal",
+  "author": {
+    "name": "Ryo Ohshima"
+  },
+  "homepage": "https://github.com/ryoohshima/AgentTakt",
+  "repository": "https://github.com/ryoohshima/AgentTakt",
+  "license": "MIT",
+  "keywords": ["mcp", "tui", "agent", "plan", "approval"]
+}

@@ -51,6 +51,27 @@ Installing is also handy for everyday use even with uv — you start the TUI by 
 uv tool install agenttakt
 ```
 
+### Agent Plugins
+
+This repository is an [Agent Plugins 1.0.0](https://agent-plugins.org/specification)
+package. In a compatible client, load the repository root as the plugin directory:
+
+```text
+AgentTakt/
+├── plugin.json     # Portable plugin manifest
+├── mcp.json        # MCP server configuration
+└── LICENSE
+```
+
+The plugin requires `uvx` on PATH and runs the published `agenttakt` package
+from PyPI. Its uv cache is stored under the client-managed `PLUGIN_DATA`
+directory. Start the TUI separately with `uvx agenttakt` before using the tools.
+For `request_approval`, configure a sufficiently long tool timeout in your
+client (for example, 30 minutes); the portable MCP format has no `timeout` field.
+
+The development `.mcp.json` is a separate client-native configuration that runs
+the local checkout. `server.json` supplies metadata for the MCP Registry.
+
 ## Quick Start
 
 AgentTakt runs as **two processes**: the MCP server, which Claude Code starts for you, and the TUI, which **you start yourself in a separate terminal**. The TUI is what displays the plan, so start it before asking the Executor for approval.
