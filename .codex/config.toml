@@ -1,0 +1,7 @@
+[mcp_servers.agenttakt]
+command = "uv"
+args = [
+    "run",
+    "agenttakt",
+    "serve",
+]
